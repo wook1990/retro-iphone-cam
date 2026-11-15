@@ -4,22 +4,38 @@ A web camera that gives your photos the look of old iPhones — 5s, SE, 6s, 7, 8
 
 옛 아이폰 카메라 감성으로 사진을 찍는 웹 카메라입니다. 앱 설치 없이 브라우저에서 바로 쓸 수 있어요. 사진은 기기 안에서만 처리되고, 서버로 올라가지 않습니다.
 
-**지금 열어 보기:** [https://retro-iphone-cam-3rv.pages.dev](https://retro-iphone-cam-3rv.pages.dev)
+호스팅하던 데모는 2026년 11월 16일에 내렸습니다. 예전 주소([https://retro-iphone-cam-3rv.pages.dev](https://retro-iphone-cam-3rv.pages.dev))는 앱을 더 이상 제공하지 않습니다. 아래처럼 직접 열어 쓰거나, 아무 정적 호스트에 올려 쓰면 됩니다.
+
+개발 과정은 [CHANGELOG.md](CHANGELOG.md)에 적어 두었습니다.
+
+## 직접 열기
+
+카메라는 **HTTPS** 또는 **localhost**에서만 켜집니다. `index.html`을 `file://`로 열면 카메라에 접근하지 못할 수 있습니다.
+
+로컬에서 보려면:
+
+```bash
+python3 -m http.server 8080
+```
+
+브라우저에서 `http://localhost:8080`을 엽니다.
+
+정적 호스트(Cloudflare Pages, GitHub Pages, Netlify, 아무 HTTPS 서버)에 `index.html`, `app.js`, `styles.css`, `sw.js`, `manifest.json`, `lut.png`, `icons/`를 그대로 올리면 됩니다. 빌드는 필요 없습니다.
 
 ## 홈 화면에 추가
 
-한 번 넣어 두면 앱처럼 바로 열 수 있어요. 카메라 권한은 처음 촬영할 때 한 번만 물어봅니다.
+한 번 넣어 두면 앱처럼 바로 열 수 있어요. 카메라 권한은 처음 촬영할 때 한 번만 물어봅니다. 먼저 위에서 말한 대로 HTTPS 또는 localhost에 올려 그 주소를 엽니다.
 
 **iPhone (Safari)**
-1. Safari로 위 링크를 엽니다.
+1. Safari로 호스팅한 주소를 엽니다.
 2. 공유 버튼을 누른 뒤 **홈 화면에 추가**를 선택합니다.
 3. 홈 화면 아이콘으로 다시 열면 전체 화면으로 쓸 수 있습니다.
 
 **Android (Chrome)**
-1. Chrome으로 위 링크를 엽니다.
+1. Chrome으로 호스팅한 주소를 엽니다.
 2. 메뉴에서 **홈 화면에 추가** 또는 **앱 설치**를 선택합니다.
 
-카메라는 HTTPS 또는 localhost에서만 켜집니다. 홈 화면에서 연 주소가 위 링크와 같으면 됩니다.
+카메라는 HTTPS 또는 localhost에서만 켜집니다. 홈 화면에서 연 주소가 올려 둔 주소와 같으면 됩니다.
 
 ## 쓰는 법
 
@@ -32,15 +48,7 @@ A web camera that gives your photos the look of old iPhones — 5s, SE, 6s, 7, 8
 
 ## 어떻게 만들어졌나요
 
-빌드 과정 없는 정적 웹 앱입니다. `index.html`, `styles.css`, `app.js`와 작은 PWA 파일만 있고, 프레임워크는 쓰지 않습니다. 미리보기와 저장은 기기에서 WebGL로 처리합니다.
-
-로컬에서 보려면:
-
-```bash
-python3 -m http.server 8080
-```
-
-브라우저에서 `http://localhost:8080`을 엽니다.
+빌드 과정 없는 정적 웹 앱입니다. `index.html`, `styles.css`, `app.js`와 작은 PWA 파일만 있고, 프레임워크는 쓰지 않습니다. 미리보기와 저장은 기기에서 WebGL로 처리합니다. 로컬에서 여는 방법은 위의 **직접 열기**를 보세요.
 
 ## 시뮬레이션은 이렇게 돌아갑니다
 
