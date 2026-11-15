@@ -25,7 +25,7 @@ const LOOKS = [
     aperture: 2.2, focalMm: 4.12, sensorDiagMm: 6.0, pitchUm: 1.5,
     fwc: 6500, read: 3.8, fpn: 0.6,
     isoMin: 32, isoMax: 1600, tMax: 1 / 17,
-    aberrPx: 3.6, flare: 0.22, vig: 0.42, ca: 4.0, caView: 1.1,
+    aberrPx: 0.0, flare: 0.22, vig: 0.06, ca: 4.0, caView: 0,
     nrLuma: 0.28, nrChroma: 0.9, nrRadius: 1.55,
     smearPx: 9.0, smearAmt: 0.72, smearView: 2.3, demoSoft: 0.8,
     sharpen: 0.30, halo: 0.12,
@@ -41,7 +41,7 @@ const LOOKS = [
     aperture: 2.2, focalMm: 4.15, sensorDiagMm: 6.0, pitchUm: 1.22,
     fwc: 4200, read: 2.3, fpn: 0.4,
     isoMin: 25, isoMax: 3200, tMax: 1 / 17,
-    aberrPx: 2.3, flare: 0.10, vig: 0.30, ca: 2.5, caView: 0.6,
+    aberrPx: 0.0, flare: 0.10, vig: 0.05, ca: 2.5, caView: 0,
     nrLuma: 0.3, nrChroma: 0.82, nrRadius: 1.25,
     smearPx: 5.8, smearAmt: 0.48, smearView: 1.6, demoSoft: 0.4,
     sharpen: 0.36, halo: 0.1398,
@@ -57,7 +57,7 @@ const LOOKS = [
     aperture: 2.2, focalMm: 4.15, sensorDiagMm: 6.0, pitchUm: 1.22,
     fwc: 4200, read: 3.12, fpn: 0.45,
     isoMin: 25, isoMax: 3200, tMax: 1 / 17,
-    aberrPx: 2.5, flare: 0.14, vig: 0.36, ca: 2.8, caView: 0.7,
+    aberrPx: 0.0, flare: 0.14, vig: 0.05, ca: 2.8, caView: 0,
     nrLuma: 0.34, nrChroma: 0.98, nrRadius: 1.45,
     smearPx: 7.5, smearAmt: 0.62, smearView: 2.0, demoSoft: 0.5,
     sharpen: 0.38, halo: 0.1518,
@@ -73,7 +73,7 @@ const LOOKS = [
     aperture: 1.8, focalMm: 3.99, sensorDiagMm: 6.0, pitchUm: 1.22,
     fwc: 4800, read: 1.5, fpn: 0.3,
     isoMin: 20, isoMax: 3200, tMax: 1 / 4,
-    aberrPx: 1.5, flare: 0.07, vig: 0.20, ca: 1.6, caView: 0.35,
+    aberrPx: 0.0, flare: 0.07, vig: 0.04, ca: 1.6, caView: 0,
     nrLuma: 0.25, nrChroma: 0.66, nrRadius: 1.1,
     smearPx: 5.0, smearAmt: 0.42, smearView: 1.45, demoSoft: 0.2,
     sharpen: 0.36, halo: 0.1463,
@@ -89,7 +89,7 @@ const LOOKS = [
     aperture: 1.8, focalMm: 3.99, sensorDiagMm: 6.0, pitchUm: 1.22,
     fwc: 5000, read: 1.275, fpn: 0.25,
     isoMin: 22, isoMax: 2500, tMax: 1 / 4,
-    aberrPx: 1.2, flare: 0.05, vig: 0.16, ca: 1.2, caView: 0.25,
+    aberrPx: 0.0, flare: 0.05, vig: 0.03, ca: 1.2, caView: 0,
     nrLuma: 0.12, nrChroma: 0.4, nrRadius: 1,
     smearPx: 5.5, smearAmt: 0.40, smearView: 1.35, demoSoft: 0.1,
     sharpen: 0.36, halo: 0.18,
@@ -105,7 +105,7 @@ const LOOKS = [
     aperture: 1.8, focalMm: 4.25, sensorDiagMm: 7.06, pitchUm: 1.4,
     fwc: 8000, read: 1.125, fpn: 0.18,
     isoMin: 16, isoMax: 3200, tMax: 1 / 4,
-    aberrPx: 0.7, flare: 0.03, vig: 0.08, ca: 0.8, caView: 0.12,
+    aberrPx: 0.0, flare: 0.03, vig: 0.02, ca: 0.8, caView: 0,
     nrLuma: 0.1, nrChroma: 0.28, nrRadius: 0.85,
     smearPx: 2.8, smearAmt: 0.20, smearView: 0.80, demoSoft: 0.0,
     sharpen: 0.32, halo: 0.08,
@@ -272,11 +272,10 @@ uniform float uHalfDiagMm;
 
 void main() {
   vec2 uv = vUv;
-  vec2 mm = (uv * 2.0 - 1.0) * uHalfMm;
-  float rNorm = length(mm) / max(uHalfDiagMm, 0.0001);
-  // 0.21 × Airy diameter is the Gaussian σ of the diffraction core.
-  // 0.45 was ~2× too wide and pinned native MTF50 around 0.18 cy/px.
-  float sigma = uDiffPx * 0.21 + uAberrPx * rNorm * rNorm;
+  // Diffraction only, spatially uniform. Field-dependent aberration
+  // made the edges look like portrait / bokeh mode; real era JPEGs
+  // have a center/corner MTF ratio of about 1 at phone size.
+  float sigma = uDiffPx * 0.21 + uAberrPx;
   vec2 step = uDir / uRes;
   vec3 acc = decLin(texture2D(uTex, uv).rgb);
   float wsum = 1.0;
@@ -900,9 +899,11 @@ function drawFrame(targetW, targetH, seed) {
 
   const frame = lensFrame(look, targetW, targetH);
   const diffPx = ((2.44 * 0.55 * look.aperture) / look.pitchUm) * frame.scale;
-  const aberrPx = look.aberrPx * frame.scale;
-  const caView = (targetW < look.width * 0.5) ? (look.caView || 0) : 0;
-  const caPx = look.ca * frame.scale + caView;
+  const aberrPx = (look.aberrPx || 0) * frame.scale;
+  // Lateral CA is a few native pixels at most, so it only shows in a
+  // 100% crop. Do not add a view-size floor — that fringed and softened
+  // the frame edges on a phone screen.
+  const caPx = (targetW >= look.width * 0.45) ? (look.ca * frame.scale) : 0;
   const srcW = state.still ? src.width : (video.videoWidth || targetW);
   const srcH = state.still ? src.height : (video.videoHeight || targetH);
   // Bayer at the model's native pixel pitch only. At preview size a CFA
