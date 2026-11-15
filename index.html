@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="그때 아이폰">
+  <meta name="theme-color" content="#0b0b0b">
+  <meta name="description" content="옛 아이폰 카메라 감성으로 사진을 찍어요. 5s, SE, 6s, 7, 8, XS.">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+  <title>그때 아이폰</title>
+</head>
+<body>
+  <video id="video" playsinline muted autoplay></video>
+  <canvas id="gl" hidden></canvas>
+
+  <div id="app">
+    <header class="top">
+      <span class="top-slot" aria-hidden="true"></span>
+      <div class="top-center">
+        <h1>그때 아이폰</h1>
+        <p id="look-meta">5s · 2013</p>
+      </div>
+      <button type="button" id="ratio" class="ratio" aria-label="화면 비율 4:3">4:3</button>
+    </header>
+
+    <div id="stage" class="stage">
+      <div id="finder" class="finder">
+        <canvas id="view"></canvas>
+        <div id="flash" class="flash" hidden></div>
+      </div>
+    </div>
+
+    <div id="looks" class="looks" role="listbox" aria-label="기종 감성"></div>
+
+    <div class="controls">
+      <button type="button" id="thumb" class="thumb" aria-label="마지막 사진" disabled></button>
+      <button type="button" id="shutter" class="shutter" aria-label="촬영"></button>
+      <button type="button" id="flip" class="flip" aria-label="전면 후면 전환">전환</button>
+    </div>
+  </div>
+
+  <div id="gate" class="overlay" hidden>
+    <div class="sheet">
+      <h2 id="gate-title">카메라가 필요해요</h2>
+      <p id="gate-msg">사진을 찍으려면 카메라 권한을 허용해 주세요.</p>
+      <button type="button" id="gate-btn">카메라 켜기</button>
+    </div>
+  </div>
+
+  <div id="review" class="overlay" hidden>
+    <img id="review-img" alt="방금 찍은 사진">
+    <div class="review-bar">
+      <button type="button" id="review-close">닫기</button>
+      <button type="button" id="review-save" class="primary">사진에 저장</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+# 그때 아이폰
+
+A web camera that gives your photos the look of old iPhones — 5s, SE, 6s, 7, 8, and XS.
+
+옛 아이폰 카메라 감성으로 사진을 찍는 웹 카메라입니다. 앱 설치 없이 브라우저에서 바로 쓸 수 있어요. 사진은 기기 안에서만 처리되고, 서버로 올라가지 않습니다.
+
+**지금 열어 보기:** [https://retro-iphone-cam-3rv.pages.dev](https://retro-iphone-cam-3rv.pages.dev)
+
+## 홈 화면에 추가
+
+한 번 넣어 두면 앱처럼 바로 열 수 있어요. 카메라 권한은 처음 촬영할 때 한 번만 물어봅니다.
+
+**iPhone (Safari)**
+1. Safari로 위 링크를 엽니다.
+2. 공유 버튼을 누른 뒤 **홈 화면에 추가**를 선택합니다.
+3. 홈 화면 아이콘으로 다시 열면 전체 화면으로 쓸 수 있습니다.
+
+**Android (Chrome)**
+1. Chrome으로 위 링크를 엽니다.
+2. 메뉴에서 **홈 화면에 추가** 또는 **앱 설치**를 선택합니다.
+
+카메라는 HTTPS 또는 localhost에서만 켜집니다. 홈 화면에서 연 주소가 위 링크와 같으면 됩니다.
+
+## 쓰는 법
+
+- 위의 여섯 가지 모델 중에서 하나를 고릅니다. 색감만이 아니라 그 시절 센서와 ISP의 느낌(노이즈, 다이내믹 레인지, 해상력, JPEG)도 따라갑니다.
+- 오른쪽 위 버튼을 누르면 화면 비율이 바뀝니다. **4:3**이 기본값이고, 그때 아이폰의 기본 사진 비율입니다. **1:1**은 그 시절 인스타그램 정사각, **16:9**는 와이드입니다. 미리보기에 잘리는 영역이 가려지고, 저장되는 사진도 그 비율로 잘립니다. 세로나 가로 모두 됩니다.
+- 촬영한 사진은 앨범에 저장하거나 공유할 수 있습니다.
+
+참고로 공개된 스펙 기준으로 SE 1세대는 6s와 같은 12MP입니다. (가끔 8MP로 적힌 글을 볼 수 있어요.)
+
+## 어떻게 만들어졌나요
+
+빌드 과정 없는 정적 웹 앱입니다. `index.html`, `styles.css`, `app.js`와 작은 PWA 파일만 있고, 프레임워크는 쓰지 않습니다. 미리보기와 저장은 기기에서 WebGL로 처리합니다.
+
+로컬에서 보려면:
+
+```bash
+python3 -m http.server 8080
+```
+
+브라우저에서 `http://localhost:8080`을 엽니다.
+
+## 샘플 사진 출처
+
+테스트와 샘플에 쓴 거리 사진은 James Ó Nuanáin의 *Inverness Street Market from Camden High Street 2020*입니다. 라이선스는 [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/).
+
+## 라이선스
+
+이 프로젝트의 코드는 MIT License, Copyright (c) 2026 Haram Oh 입니다. 자세한 내용은 `LICENSE`를 보세요.

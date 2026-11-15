@@ -1,0 +1,17 @@
+.DS_Store
+*.zip
+*.log
+test/node_modules/
+samples/test-summary.json
+samples/ui-after-still.png
+samples/original.jpg
+samples/5s.jpg
+samples/se.jpg
+samples/6s.jpg
+samples/7.jpg
+samples/8.jpg
+samples/xs.jpg
+samples/lowlight-*.jpg
+samples/contact-sheet.jpg
+samples/ui-mobile.png
+test/source-dim.jpg
