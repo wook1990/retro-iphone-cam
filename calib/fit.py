@@ -241,29 +241,23 @@ def smooth3d(lut, passes=1):
 
 
 def repair_lut_tone(lut, ident):
-    """Force a monotonic 0-1 gray ramp. Highlight bins are often polluted
-    by misaligned clipped pixels and would otherwise map white to mid-gray.
+    """Keep fitted chroma, restore identity luma.
+
+    Same-scene pairs still have residual misalignment, so a 3D splat
+    regresses toward mid-gray and flattens midtone slope even after the
+    endpoints are forced to 0 and 1. Polluted near-black / near-white
+    bins (and bins whose luma is far from the source) fall back to
+    identity; every other bin keeps its chromatic shift and is scaled
+    so output luma equals input luma. The gray ramp is then identity
+    and mid-slope stays 1.
     """
-    g = np.linspace(0.0, 1.0, N)
-    ys = np.array([ (lut[i, i, i, 0] * 0.2126 + lut[i, i, i, 1] * 0.7152 + lut[i, i, i, 2] * 0.0722) for i in range(N) ], dtype=np.float64)
-    xs, yk = [0.0], [0.0]
-    for i in range(1, N - 1):
-        if abs(ys[i] - g[i]) < 0.22:
-            xs.append(g[i])
-            yk.append(float(ys[i]))
-    xs.append(1.0)
-    yk.append(1.0)
-    for j in range(1, len(yk)):
-        yk[j] = max(yk[j], yk[j - 1] + 0.004)
-    yk[-1] = 1.0
-    curve = np.interp(g, xs, yk)
-    src_y = ident[..., 0] * 0.2126 + ident[..., 1] * 0.7152 + ident[..., 2] * 0.0722
-    dst_y = lut[..., 0] * 0.2126 + lut[..., 1] * 0.7152 + lut[..., 2] * 0.0722
-    target_y = np.interp(src_y, g, curve)
-    bad = (src_y > 0.88) | (src_y < 0.08) | (np.abs(dst_y - src_y) > 0.25)
-    scaled = np.clip(lut * (target_y / np.maximum(dst_y, 1e-4))[..., None], 0, 1)
-    id_scaled = np.clip(ident * (target_y / np.maximum(src_y, 1e-4))[..., None], 0, 1)
-    out = np.where(bad[..., None], id_scaled, scaled)
+    src_y = luma(ident)
+    dst_y = luma(lut)
+    bad = (src_y > 0.88) | (src_y < 0.08) | (np.abs(dst_y - src_y) > 0.25) | (dst_y < 0.02)
+    work = np.where(bad[..., None], ident, lut)
+    work_y = luma(work)
+    scaled = np.clip(work * (src_y / np.maximum(work_y, 1e-4))[..., None], 0, 1)
+    out = np.where((work_y < 0.02)[..., None], ident, scaled)
     out[0, 0, 0] = 0
     out[N - 1, N - 1, N - 1] = 1
     return np.clip(out, 0, 1)

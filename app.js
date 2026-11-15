@@ -25,7 +25,7 @@ const LOOKS = [
     aperture: 2.2, focalMm: 4.12, sensorDiagMm: 6.0, pitchUm: 1.5,
     fwc: 6500, read: 3.8, fpn: 0.6,
     isoMin: 32, isoMax: 1600, tMax: 1 / 17,
-    aberrPx: 3.6, flare: 0.08, ca: 4.0,
+    aberrPx: 3.6, flare: 0.032, vig: 0.22, ca: 4.0,
     nrLuma: 0.28, nrChroma: 0.9, nrRadius: 1.55,
     sharpen: 0.28, halo: 0.12,
     wb: [1, 1, 1],
@@ -40,7 +40,7 @@ const LOOKS = [
     aperture: 2.2, focalMm: 4.15, sensorDiagMm: 6.0, pitchUm: 1.22,
     fwc: 4200, read: 2.3, fpn: 0.4,
     isoMin: 25, isoMax: 3200, tMax: 1 / 17,
-    aberrPx: 2.3, flare: 0.05, ca: 2.5,
+    aberrPx: 2.3, flare: 0.02, vig: 0.18, ca: 2.5,
     nrLuma: 0.3, nrChroma: 0.82, nrRadius: 1.25,
     sharpen: 0.325, halo: 0.1398,
     wb: [1, 1, 1],
@@ -55,7 +55,7 @@ const LOOKS = [
     aperture: 2.2, focalMm: 4.15, sensorDiagMm: 6.0, pitchUm: 1.22,
     fwc: 4200, read: 3.12, fpn: 0.45,
     isoMin: 25, isoMax: 3200, tMax: 1 / 17,
-    aberrPx: 2.5, flare: 0.06, ca: 2.8,
+    aberrPx: 2.5, flare: 0.024, vig: 0.18, ca: 2.8,
     nrLuma: 0.34, nrChroma: 0.98, nrRadius: 1.45,
     sharpen: 0.3575, halo: 0.1518,
     wb: [1, 1, 1],
@@ -70,7 +70,7 @@ const LOOKS = [
     aperture: 1.8, focalMm: 3.99, sensorDiagMm: 6.0, pitchUm: 1.22,
     fwc: 4800, read: 1.5, fpn: 0.3,
     isoMin: 20, isoMax: 3200, tMax: 1 / 4,
-    aberrPx: 1.5, flare: 0.03, ca: 1.6,
+    aberrPx: 1.5, flare: 0.012, vig: 0.14, ca: 1.6,
     nrLuma: 0.25, nrChroma: 0.66, nrRadius: 1.1,
     sharpen: 0.325, halo: 0.1463,
     wb: [1, 1, 1],
@@ -85,7 +85,7 @@ const LOOKS = [
     aperture: 1.8, focalMm: 3.99, sensorDiagMm: 6.0, pitchUm: 1.22,
     fwc: 5000, read: 1.275, fpn: 0.25,
     isoMin: 22, isoMax: 2500, tMax: 1 / 4,
-    aberrPx: 1.2, flare: 0.025, ca: 1.2,
+    aberrPx: 1.2, flare: 0.01, vig: 0.12, ca: 1.2,
     nrLuma: 0.12, nrChroma: 0.4, nrRadius: 1,
     sharpen: 0.4718, halo: 0.1787,
     wb: [1, 1, 1],
@@ -100,7 +100,7 @@ const LOOKS = [
     aperture: 1.8, focalMm: 4.25, sensorDiagMm: 7.06, pitchUm: 1.4,
     fwc: 8000, read: 1.125, fpn: 0.18,
     isoMin: 16, isoMax: 3200, tMax: 1 / 4,
-    aberrPx: 0.7, flare: 0.015, ca: 0.8,
+    aberrPx: 0.7, flare: 0.006, vig: 0.10, ca: 0.8,
     nrLuma: 0.1, nrChroma: 0.28, nrRadius: 0.85,
     sharpen: 0.29, halo: 0.08,
     wb: [1, 1, 1],
@@ -176,6 +176,7 @@ uniform vec2 uHalfMm;
 uniform float uFocalMm;
 uniform float uHalfDiagMm;
 uniform float uFlare;
+uniform float uVigAmt;
 
 vec3 srcLin(vec2 uv) {
   vec2 t = uCropOrigin + uv * uCropSize;
@@ -203,7 +204,10 @@ void main() {
   c.g = srcLin(uv).g;
   c.b = srcLin(uv - uvOff).b;
   float theta = atan(rMm / max(uFocalMm, 0.01));
-  float vig = pow(max(cos(theta), 0.0), 4.0);
+  // Input is already a vignette-corrected sRGB frame, so only the
+  // residual uncorrected falloff of that era's JPEG is applied.
+  float vigNat = pow(max(cos(theta), 0.0), 4.0);
+  float vig = mix(1.0, vigNat, clamp(uVigAmt, 0.0, 1.0));
   c *= vig;
   if (uFlare > 0.001) {
     // Veiling flare is a wide, isotropic haze from bright areas — not a
@@ -232,14 +236,16 @@ void main() {
   vec2 uv = vUv;
   vec2 mm = (uv * 2.0 - 1.0) * uHalfMm;
   float rNorm = length(mm) / max(uHalfDiagMm, 0.0001);
-  float sigma = uDiffPx * 0.45 + uAberrPx * rNorm * rNorm;
+  // 0.21 × Airy diameter is the Gaussian σ of the diffraction core.
+  // 0.45 was ~2× too wide and pinned native MTF50 around 0.18 cy/px.
+  float sigma = uDiffPx * 0.21 + uAberrPx * 0.5 * rNorm * rNorm;
   vec2 step = uDir / uRes;
   vec3 acc = decLin(texture2D(uTex, uv).rgb);
   float wsum = 1.0;
   // 9-tap Gaussian, constant loop
   for (int i = 1; i <= 4; i++) {
     float x = float(i);
-    float w = exp(-0.5 * x * x / (sigma * sigma + 0.15));
+    float w = exp(-0.5 * x * x / (sigma * sigma + 0.02));
     acc += decLin(texture2D(uTex, uv + step * x).rgb) * w;
     acc += decLin(texture2D(uTex, uv - step * x).rgb) * w;
     wsum += 2.0 * w;
@@ -392,19 +398,13 @@ void main() {
   }
 
   if (uHdr > 0.0) {
-    float loc = lum(wide);
-    float lift = (0.07 * uHdr) * (1.0 - smoothstep(0.0, 0.22, loc));
-    c += vec3(lift);
+    // Highlight roll-off + a little local contrast. Do not lift the
+    // black point: real XS JPEGs keep true blacks.
+    float localK = 0.10 * uHdr;
+    c = max(c + (c - wide) * localK, 0.0);
     float y2 = lum(c);
-    float flatK = 1.0 + 0.12 * uHdr;
-    float yFlat = mix(y2, 0.18 + (y2 - 0.18) / flatK, 0.35 * uHdr);
-    c *= yFlat / max(y2, 1.0e-4);
-    y2 = lum(c);
     c *= (y2 / (1.0 + max(y2 - 0.85, 0.0) * uHdr * 0.45)) / max(y2, 1.0e-4);
   }
-
-  float ys = lum(c);
-  c += vec3(0.007 * (1.0 - smoothstep(0.0, 0.10, ys)));
 
   if (uShoulder > 0.0) {
     float y4 = lum(c);
@@ -854,6 +854,7 @@ function drawFrame(targetW, targetH, seed) {
   gl.uniform1f(uni.uFocalMm, look.focalMm);
   gl.uniform1f(uni.uHalfDiagMm, frame.halfDiagMm);
   gl.uniform1f(uni.uFlare, look.flare);
+  gl.uniform1f(uni.uVigAmt, look.vig == null ? 0.15 : look.vig);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
   drawTo(targets[1], targetW, targetH);

@@ -49,13 +49,13 @@ python3 -m http.server 8080
 1. 화면의 sRGB를 대략 선형 빛으로 되돌립니다.
 2. 그 기종의 초점거리와 조리개(f/2.2 또는 f/1.8)로 렌즈를 재현합니다. 상은 왜곡 없는 직선(rectilinear)으로, 배율은 휴대폰 기본 1배 카메라와 같고 선택한 비율로만 자릅니다. 가운데는 비교적 선명하고 가장자리로 갈수록 회절과 수차가 커지며, 녹색 기하를 유지한 채 빨강·파랑이 아주 조금만 어긋나고, 자연스러운 비네팅과(예전 렌즈는) 약한 플레어가 생깁니다.
 3. 실제 픽셀 피치와 그 세대의 풀웰·리드 노이즈 추정값을 써서 Bayer RGGB 센서를 샘플합니다. 광전자는 샷 노이즈(포아송, 전자가 많으면 가우시안 근사)와 리드 노이즈를 거친 뒤 풀웰에서 잘리고, ISO 게인을 곱한 다음 10비트 ADC로 양자화됩니다. 하이라이트가 날아가는 지점이 여기서 결정됩니다.
-4. 그 시절 ISP 순서를 따릅니다. 에지 인식 디모자이크 뒤에, 색 노이즈를 더 세게 줄이는 NR, 7·8의 약한 로컬 톤, XS의 Smart HDR 느낌(그림자 노이즈를 더 줄이고, 하이라이트를 조금 되돌리고, 그림자를 살짝 띄우면서 로컬 대비를 남김)이 들어갑니다. 기종별 색과 톤은 실제 JPEG에서 맞춘 작은 3D LUT(17³, `lut.png`)로 적용하고, 샤픈은 그 시절 JPEG의 에지 MTF에서 잰 값으로 마지막에 걸립니다. JPEG 압축은 저장할 때만, 그 시절 품질로 들어갑니다. 맞춤에 쓴 원본 사진과 스크립트는 `calib/`를 보세요.
+4. 그 시절 ISP 순서를 따릅니다. 에지 인식 디모자이크 뒤에, 색 노이즈를 더 세게 줄이는 NR, 7·8의 약한 로컬 톤, XS의 Smart HDR 느낌(하이라이트를 조금 되돌리고 로컬 대비를 남김, 검은색은 그대로)이 들어갑니다. 기종별 색은 실제 JPEG에서 맞춘 작은 3D LUT(17³, `lut.png`)로 적용하고, 루마 톤은 같은 장면 정렬 오차가 대비를 눌러 뿌옇게 만들지 않도록 그대로 둡니다. 샤픈은 그 시절 JPEG의 에지 MTF에서 잰 값으로 마지막에 걸립니다. JPEG 압축은 저장할 때만, 그 시절 품질로 들어갑니다. 맞춤에 쓴 원본 사진과 스크립트는 `calib/`를 보세요.
 
 미리보기는 같은 체인을 화면 해상도로, 저장은 그 기종의 원래 해상도로 돌립니다.
 
 ## How the simulation works
 
-The look is not a painted grain or blur formula. Light is linearized, then passed through that phone's lens (rectilinear, no barrel; the field of view is the phone's native 1x, cropped to the chosen ratio; diffraction, corner aberrations, a tiny red/blue CA offset that leaves green geometry alone, cos⁴-like vignetting, mild flare on older glass), a Bayer RGGB sensor (shot and read noise, full-well clip, ISO gain, 10-bit ADC), and an era-style ISP: chroma-heavier NR, light local tone on the 7 and 8, an XS Smart HDR approximation, a 17³ color/tone LUT fitted to real JPEGs, then sharpening measured from those JPEGs' edge MTF. JPEG is applied only when a photo is saved, at that era's quality. Grain, smear, and color noise come out of this chain. Calibration sources and scripts live in `calib/`.
+The look is not a painted grain or blur formula. Light is linearized, then passed through that phone's lens (rectilinear, no barrel; the field of view is the phone's native 1x, cropped to the chosen ratio; diffraction, corner aberrations, a tiny red/blue CA offset that leaves green geometry alone, residual cos⁴-like vignetting on already-corrected frames, mild flare on older glass), a Bayer RGGB sensor (shot and read noise, full-well clip, ISO gain, 10-bit ADC), and an era-style ISP: chroma-heavier NR, light local tone on the 7 and 8, an XS Smart HDR approximation that keeps true blacks, a 17³ color LUT fitted to real JPEGs (chroma only — luma stays identity so a misaligned fit cannot flatten contrast), then sharpening measured from those JPEGs' edge MTF. JPEG is applied only when a photo is saved, at that era's quality. Grain, smear, and color noise come out of this chain. Calibration sources and scripts live in `calib/`.
 
 ## 샘플 사진 출처
 

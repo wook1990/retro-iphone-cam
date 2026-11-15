@@ -45,3 +45,19 @@ Day still life, render / real: about 0.34–0.45× — the real “sigma” stil
 - A global 17³ LUT cannot copy 13’s / XS’s local tone mapping; leftover ΔE on colorful small objects is also inflated by residual misalignment.
 - 8 and 7 Commons sets had little very-high-ISO material (8 tops out around ISO 100 in the CC set; GSMArena low-light for those two is ISO 100).
 - Live preview is already auto-exposed sRGB; AE at ev=0 now keeps mid-gray so the LUT sees the tones it was fitted on. Low-light *noise* on an already-brightened phone preview will still be conservative unless the user raises ISO via a dark frame or EV.
+
+## v8 punch repair (fog / haze)
+
+v7 renders were milky: lifted blacks, crushed whites, flat midtones, soft edges. Measured against the same-scene GSMArena JPEGs (1st/99th percentile, midtone span, RMS local contrast, MTF50):
+
+Root causes, in order:
+
+1. **LUT mid-slope flattening.** Residual misalignment in 13→era splat regresses bins toward mid-gray. `repair_lut_tone` had forced endpoints to 0 and 1 but kept the flattened midtones (6s mid-slope 0.56). The repair now keeps fitted chroma and restores **identity luma**, so the gray ramp slope is 1.
+2. **ISP shadow toe** of +0.007 linear before gamma, about +0.10 sRGB on blacks. Removed.
+3. **Full cos⁴ vignette** applied on already-corrected sRGB frames, which crushed corners and pulled the full-frame white point down. The lens still uses physical radius and cos⁴, but only a residual amount (0.10–0.22, older glass more).
+4. **PSF too wide.** Gaussian σ used 0.45 × Airy diameter (~2× the Airy core) plus a 0.15 floor in σ², which pinned native MTF50 around 0.18 cy/px. Now 0.21 × diameter, 0.5 × corner aberration, and a 0.02 floor.
+5. **Flare** reduced to ~40% of the v7 amounts (same isotropic 4-tap model, older glass still stronger). XS HDR no longer lifts the black point.
+
+AE at ev=0, the lens-radius/crop fix, per-model NR/sharpen/local-tone, and Bayer geometry are unchanged. A global contrast slider was not added.
+
+Still-life midtone span and RMS local contrast now match the real JPEGs closely; black/white points are within about 0.02–0.05. Chart MTF50 is higher than v7 but still short of the punchiest real chart edges on 5s/SE/6s (era smear remains). See the v8 before/after table in the ship log.
