@@ -1,0 +1,42 @@
+{
+  "note": "GSMArena Photo Compare same-scene JPEGs. Filenames under calib/raw/gsmarena/. Do not redistribute.",
+  "reference": "13",
+  "scenes": {
+    "chart": {
+      "5s": "iphone-5s-1.jpg",
+      "se": "apple-iphone-se-1.jpg",
+      "6s": "apple-iphone-6s-1.jpg",
+      "7": "apple-iphone-7-1.jpg",
+      "8": "iphone8-1.jpg",
+      "xs": "apple-iphone-xs-1.jpg",
+      "13": "apple-iphone-13-1.jpg",
+      "14": "iphone-14-100.jpg"
+    },
+    "still_day": {
+      "se": "apple-iphone-se-2.jpg",
+      "6s": "iphone-6s-4.jpg",
+      "7": "apple-iphone-7-2.jpg",
+      "8": "iphone8-2.jpg",
+      "xs": "apple-iphone-xs-2.jpg",
+      "13": "apple-iphone-13-2.jpg",
+      "14": "iphone-14-2.jpg"
+    },
+    "still_low": {
+      "se": "apple-iphone-se-3.jpg",
+      "6s": "iphone-6s-5.jpg",
+      "7": "apple-iphone-7-3.jpg",
+      "8": "iphone8-3.jpg",
+      "xs": "apple-iphone-xs-3.jpg",
+      "13": "apple-iphone-13-3.jpg",
+      "14": "iphone-14-3.jpg"
+    },
+    "old_studio": {
+      "5s": "iphone-5s-2.jpg",
+      "6s": "apple-iphone-6s-2.jpg"
+    },
+    "old_portrait": {
+      "5s": "iphone-5s-3.jpg",
+      "6s": "apple-iphone-6s-3.jpg"
+    }
+  }
+}

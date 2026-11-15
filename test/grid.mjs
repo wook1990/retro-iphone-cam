@@ -54,6 +54,7 @@ async function boot(viewport) {
   page.on("pageerror", (e) => console.error("PAGEERROR", e));
   await page.goto(url, { waitUntil: "domcontentloaded" });
   await page.waitForFunction(() => window.__TEST__ && document.getElementById("video")?.videoWidth > 0, { timeout: 15000 });
+  await page.evaluate(() => window.__TEST__.lutReady);
   await new Promise((r) => setTimeout(r, 300));
   return { browser, page };
 }

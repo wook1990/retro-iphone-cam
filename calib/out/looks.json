@@ -1,0 +1,284 @@
+{
+  "5s": {
+    "lutRow": 0,
+    "nrLuma": 0.28,
+    "nrChroma": 0.9,
+    "nrRadius": 1.55,
+    "read": 3.8,
+    "fwc": 6500,
+    "sharpen": 0.28,
+    "halo": 0.12,
+    "sharpenPx": 1.0,
+    "contrast": 1.0,
+    "mid": 0.0,
+    "shoulder": 0.0,
+    "shoulderStart": 0.82,
+    "wb": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "sat": 1.0,
+    "ccm": [
+      1,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1
+    ],
+    "toneMeasured": {
+      "contrast": 0.85,
+      "mid": 0.25,
+      "shoulder": 0.8442887687508002,
+      "shoulderStart": 0.82,
+      "wb": [
+        1.003579020500183,
+        1.0,
+        1.0128262042999268
+      ],
+      "sat": 1.350000023841858
+    },
+    "localTone": 0.0,
+    "hdr": 0.0,
+    "jpeg": 0.9
+  },
+  "se": {
+    "lutRow": 17,
+    "nrLuma": 0.30000000000000004,
+    "nrChroma": 0.8200000000000001,
+    "nrRadius": 1.25,
+    "read": 2.3,
+    "fwc": 4200,
+    "sharpen": 0.325,
+    "halo": 0.13981886683893816,
+    "sharpenPx": 1.0,
+    "contrast": 1.0,
+    "mid": 0.0,
+    "shoulder": 0.0,
+    "shoulderStart": 0.82,
+    "wb": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "sat": 1.0,
+    "ccm": [
+      1,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1
+    ],
+    "toneMeasured": {
+      "contrast": 0.85,
+      "mid": 0.25,
+      "shoulder": 2.096819965219686,
+      "shoulderStart": 0.82,
+      "wb": [
+        1.0236479043960571,
+        1.0,
+        0.9783099293708801
+      ],
+      "sat": 1.350000023841858
+    },
+    "localTone": 0.0,
+    "hdr": 0.0,
+    "jpeg": 0.9
+  },
+  "6s": {
+    "lutRow": 34,
+    "nrLuma": 0.33999999999999997,
+    "nrChroma": 0.98,
+    "nrRadius": 1.45,
+    "read": 3.12,
+    "fwc": 4200,
+    "sharpen": 0.3575,
+    "halo": 0.15178747528794814,
+    "sharpenPx": 1.0,
+    "contrast": 1.0,
+    "mid": 0.0,
+    "shoulder": 0.0,
+    "shoulderStart": 0.82,
+    "wb": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "sat": 1.0,
+    "ccm": [
+      1,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1
+    ],
+    "toneMeasured": {
+      "contrast": 0.85,
+      "mid": 0.25,
+      "shoulder": 2.5,
+      "shoulderStart": 0.82,
+      "wb": [
+        1.0091279745101929,
+        1.0,
+        0.9709610939025879
+      ],
+      "sat": 1.350000023841858
+    },
+    "localTone": 0.0,
+    "hdr": 0.0,
+    "jpeg": 0.9
+  },
+  "7": {
+    "lutRow": 51,
+    "nrLuma": 0.25,
+    "nrChroma": 0.6599999999999999,
+    "nrRadius": 1.1,
+    "read": 1.5,
+    "fwc": 4800,
+    "sharpen": 0.325,
+    "halo": 0.14633872598578526,
+    "sharpenPx": 1.0,
+    "contrast": 1.0,
+    "mid": 0.0,
+    "shoulder": 0.0,
+    "shoulderStart": 0.82,
+    "wb": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "sat": 1.0,
+    "ccm": [
+      1,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1
+    ],
+    "toneMeasured": {
+      "contrast": 0.85,
+      "mid": 0.25,
+      "shoulder": 2.5,
+      "shoulderStart": 0.82,
+      "wb": [
+        1.0160703659057617,
+        1.0,
+        0.9913139343261719
+      ],
+      "sat": 0.8606889843940735
+    },
+    "localTone": 0.08,
+    "hdr": 0.0,
+    "jpeg": 0.92
+  },
+  "8": {
+    "lutRow": 68,
+    "nrLuma": 0.12,
+    "nrChroma": 0.4,
+    "nrRadius": 1.0,
+    "read": 1.275,
+    "fwc": 5000,
+    "sharpen": 0.47178571428571425,
+    "halo": 0.1786915624924983,
+    "sharpenPx": 1.0,
+    "contrast": 1.0,
+    "mid": 0.0,
+    "shoulder": 0.0,
+    "shoulderStart": 0.82,
+    "wb": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "sat": 1.0,
+    "ccm": [
+      1,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1
+    ],
+    "toneMeasured": {
+      "contrast": 0.85,
+      "mid": 0.25,
+      "shoulder": 2.5,
+      "shoulderStart": 0.82,
+      "wb": [
+        1.020193099975586,
+        1.0,
+        0.9786943793296814
+      ],
+      "sat": 1.350000023841858
+    },
+    "localTone": 0.08,
+    "hdr": 0.0,
+    "jpeg": 0.93
+  },
+  "xs": {
+    "lutRow": 85,
+    "nrLuma": 0.1,
+    "nrChroma": 0.28,
+    "nrRadius": 0.85,
+    "read": 1.125,
+    "fwc": 8000,
+    "sharpen": 0.29000000000000004,
+    "halo": 0.08,
+    "sharpenPx": 1.0,
+    "contrast": 1.0,
+    "mid": 0.0,
+    "shoulder": 0.0,
+    "shoulderStart": 0.82,
+    "wb": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "sat": 1.0,
+    "ccm": [
+      1,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1
+    ],
+    "toneMeasured": {
+      "contrast": 0.85,
+      "mid": 0.25,
+      "shoulder": 2.5,
+      "shoulderStart": 0.82,
+      "wb": [
+        1.0046921968460083,
+        1.0,
+        0.9962789416313171
+      ],
+      "sat": 0.8700495362281799
+    },
+    "localTone": 0.06,
+    "hdr": 0.22,
+    "jpeg": 0.94
+  }
+}

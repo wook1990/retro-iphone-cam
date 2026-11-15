@@ -21,3 +21,9 @@ samples/original-dim.jpg
 samples/grid-verify.jpg
 test/grid-*.jpg
 __pycache__/
+calib/raw/
+calib/.venv/
+calib/__pycache__/
+calib/out/preview/
+samples/compare-real.jpg
+samples/compare-*.jpg

@@ -95,6 +95,7 @@ await page.waitForFunction(() => {
   return v && v.videoWidth > 0 && v.readyState >= 2;
 });
 await new Promise((r) => setTimeout(r, 400));
+await page.evaluate(() => window.__TEST__.lutReady);
 
 function expectedAspect(ratioId, portrait) {
   if (ratioId === "1:1") return 1;

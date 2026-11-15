@@ -26,11 +26,13 @@ const LOOKS = [
     fwc: 6500, read: 3.8, fpn: 0.6,
     isoMin: 32, isoMax: 1600, tMax: 1 / 17,
     aberrPx: 3.6, flare: 0.08, ca: 4.0,
-    nrLuma: 0.2, nrChroma: 0.9,
-    sharpen: 0.2, halo: 0.08,
-    wb: [1.08, 1, 0.9],
-    ccm: [1.12, -0.08, -0.04, -0.05, 1.04, 0.01, -0.06, -0.05, 1.08],
-    sat: 1.08, contrast: 0.96, mid: 0, hdr: 0,
+    nrLuma: 0.28, nrChroma: 0.9, nrRadius: 1.55,
+    sharpen: 0.28, halo: 0.12,
+    wb: [1, 1, 1],
+    ccm: [1, 0, 0, 0, 1, 0, 0, 0, 1],
+    sat: 1, contrast: 1, mid: 0,
+    shoulder: 0, shoulderStart: 0.82,
+    localTone: 0, hdr: 0, lutRow: 0,
   },
   {
     id: "se", name: "SE", year: "2016",
@@ -39,65 +41,83 @@ const LOOKS = [
     fwc: 4200, read: 2.3, fpn: 0.4,
     isoMin: 25, isoMax: 3200, tMax: 1 / 17,
     aberrPx: 2.3, flare: 0.05, ca: 2.5,
-    nrLuma: 0.14, nrChroma: 0.52,
-    sharpen: 0.42, halo: 0.2,
-    wb: [0.98, 1, 1.05],
-    ccm: [1.02, -0.03, 0.01, -0.04, 1.03, 0.01, -0.02, -0.02, 1.1],
-    sat: 1.05, contrast: 1.05, mid: 0.02, hdr: 0,
+    nrLuma: 0.3, nrChroma: 0.82, nrRadius: 1.25,
+    sharpen: 0.325, halo: 0.1398,
+    wb: [1, 1, 1],
+    ccm: [1, 0, 0, 0, 1, 0, 0, 0, 1],
+    sat: 1, contrast: 1, mid: 0,
+    shoulder: 0, shoulderStart: 0.82,
+    localTone: 0, hdr: 0, lutRow: 17,
   },
   {
     id: "6s", name: "6s", year: "2015",
     width: 4032, height: 3024, jpeg: 0.9,
     aperture: 2.2, focalMm: 4.15, sensorDiagMm: 6.0, pitchUm: 1.22,
-    fwc: 4200, read: 2.4, fpn: 0.45,
+    fwc: 4200, read: 3.12, fpn: 0.45,
     isoMin: 25, isoMax: 3200, tMax: 1 / 17,
     aberrPx: 2.5, flare: 0.06, ca: 2.8,
-    nrLuma: 0.18, nrChroma: 0.7,
-    sharpen: 0.28, halo: 0.12,
-    wb: [1.12, 1, 0.86],
-    ccm: [1.16, -0.1, -0.06, -0.06, 1.05, 0.01, -0.08, -0.06, 1.04],
-    sat: 1.16, contrast: 1.04, mid: 0.02, hdr: 0,
+    nrLuma: 0.34, nrChroma: 0.98, nrRadius: 1.45,
+    sharpen: 0.3575, halo: 0.1518,
+    wb: [1, 1, 1],
+    ccm: [1, 0, 0, 0, 1, 0, 0, 0, 1],
+    sat: 1, contrast: 1, mid: 0,
+    shoulder: 0, shoulderStart: 0.82,
+    localTone: 0, hdr: 0, lutRow: 34,
   },
   {
     id: "7", name: "7", year: "2016",
     width: 4032, height: 3024, jpeg: 0.92,
     aperture: 1.8, focalMm: 3.99, sensorDiagMm: 6.0, pitchUm: 1.22,
-    fwc: 4800, read: 2.0, fpn: 0.3,
+    fwc: 4800, read: 1.5, fpn: 0.3,
     isoMin: 20, isoMax: 3200, tMax: 1 / 4,
     aberrPx: 1.5, flare: 0.03, ca: 1.6,
-    nrLuma: 0.09, nrChroma: 0.36,
-    sharpen: 0.42, halo: 0.18,
-    wb: [0.97, 1, 1.05],
-    ccm: [1.01, -0.03, 0.02, -0.03, 1.03, 0.0, -0.02, -0.03, 1.08],
-    sat: 1.04, contrast: 1.06, mid: 0.02, hdr: 0,
+    nrLuma: 0.25, nrChroma: 0.66, nrRadius: 1.1,
+    sharpen: 0.325, halo: 0.1463,
+    wb: [1, 1, 1],
+    ccm: [1, 0, 0, 0, 1, 0, 0, 0, 1],
+    sat: 1, contrast: 1, mid: 0,
+    shoulder: 0, shoulderStart: 0.82,
+    localTone: 0.08, hdr: 0, lutRow: 51,
   },
   {
     id: "8", name: "8", year: "2017",
     width: 4032, height: 3024, jpeg: 0.93,
     aperture: 1.8, focalMm: 3.99, sensorDiagMm: 6.0, pitchUm: 1.22,
-    fwc: 5000, read: 1.7, fpn: 0.25,
+    fwc: 5000, read: 1.275, fpn: 0.25,
     isoMin: 22, isoMax: 2500, tMax: 1 / 4,
     aberrPx: 1.2, flare: 0.025, ca: 1.2,
-    nrLuma: 0.07, nrChroma: 0.28,
-    sharpen: 0.48, halo: 0.28,
-    wb: [1.07, 1.02, 0.9],
-    ccm: [1.08, -0.06, -0.02, -0.04, 1.04, 0.0, -0.05, -0.04, 1.02],
-    sat: 1.07, contrast: 1.06, mid: 0.02, hdr: 0,
+    nrLuma: 0.12, nrChroma: 0.4, nrRadius: 1,
+    sharpen: 0.4718, halo: 0.1787,
+    wb: [1, 1, 1],
+    ccm: [1, 0, 0, 0, 1, 0, 0, 0, 1],
+    sat: 1, contrast: 1, mid: 0,
+    shoulder: 0, shoulderStart: 0.82,
+    localTone: 0.08, hdr: 0, lutRow: 68,
   },
   {
     id: "xs", name: "XS", year: "2018",
     width: 4032, height: 3024, jpeg: 0.94,
     aperture: 1.8, focalMm: 4.25, sensorDiagMm: 7.06, pitchUm: 1.4,
-    fwc: 8000, read: 1.5, fpn: 0.18,
+    fwc: 8000, read: 1.125, fpn: 0.18,
     isoMin: 16, isoMax: 3200, tMax: 1 / 4,
     aberrPx: 0.7, flare: 0.015, ca: 0.8,
-    nrLuma: 0.04, nrChroma: 0.16,
-    sharpen: 0.28, halo: 0.03,
-    wb: [1.05, 1.01, 0.94],
-    ccm: [1.04, -0.03, -0.01, -0.03, 1.02, 0.01, -0.03, -0.03, 1.04],
-    sat: 1.05, contrast: 1.02, mid: 0.02, hdr: 0.16,
-  },
+    nrLuma: 0.1, nrChroma: 0.28, nrRadius: 0.85,
+    sharpen: 0.29, halo: 0.08,
+    wb: [1, 1, 1],
+    ccm: [1, 0, 0, 0, 1, 0, 0, 0, 1],
+    sat: 1, contrast: 1, mid: 0,
+    shoulder: 0, shoulderStart: 0.82,
+    localTone: 0.06, hdr: 0.22, lutRow: 85,
+  }
 ];
+
+const lutImage = new Image();
+lutImage.src = "./lut.png";
+const lutReady = new Promise((resolve) => {
+  if (lutImage.complete && lutImage.naturalWidth) resolve(true);
+  lutImage.onload = () => resolve(true);
+  lutImage.onerror = () => resolve(false);
+});
 
 const VS = `
 attribute vec2 aPos;
@@ -315,12 +335,31 @@ void main() {
 const FS_ISP = COMMON + `
 uniform float uNrLuma;
 uniform float uNrChroma;
+uniform float uNrRadius;
 uniform float uSharpen;
 uniform float uHalo;
 uniform float uContrast;
 uniform float uMid;
+uniform float uShoulder;
+uniform float uShoulderStart;
 uniform float uHdr;
+uniform float uLocalTone;
 uniform float uIsoNorm;
+uniform sampler2D uLUT;
+uniform float uLutRow;
+uniform vec2 uLutSize;
+uniform float uUseLut;
+
+vec3 applyLut(vec3 c) {
+  c = clamp(c, 0.0, 1.0);
+  float b = c.b * 16.0;
+  float b0 = min(floor(b), 15.0);
+  float f = b - b0;
+  float y = (uLutRow + c.g * 16.0 + 0.5) / uLutSize.y;
+  float x0 = (b0 * 17.0 + c.r * 16.0 + 0.5) / uLutSize.x;
+  float x1 = (min(b0 + 1.0, 16.0) * 17.0 + c.r * 16.0 + 0.5) / uLutSize.x;
+  return mix(texture2D(uLUT, vec2(x0, y)).rgb, texture2D(uLUT, vec2(x1, y)).rgb, f);
+}
 
 void main() {
   vec2 px = 1.0 / uRes;
@@ -336,23 +375,41 @@ void main() {
   vec3 blur = (c0 * 0.2 + (n1 + n2 + n3 + n4) * 0.125 + (n5 + n6 + n7 + n8) * 0.075);
   vec3 wide = (c0 + n1 + n2 + n3 + n4 + n5 + n6 + n7 + n8) / 9.0;
   float y0 = lum(c0);
-  float yb = lum(blur);
   float isoK = 0.45 + 0.55 * clamp(uIsoNorm, 0.0, 1.0);
   float shadowK = 1.0 + 0.4 * (1.0 - smoothstep(0.03, 0.28, y0));
-  float y = mix(y0, yb, clamp(uNrLuma * isoK, 0.0, 0.7));
-  vec3 ch = mix(c0 - vec3(y0), blur - vec3(yb), clamp(uNrChroma * isoK * shadowK, 0.0, 0.95));
+  float rMix = clamp((uNrRadius - 0.7) / 1.2, 0.0, 1.0);
+  vec3 nrBlur = mix(blur, wide, rMix);
+  float yb = lum(nrBlur);
+  float hdrShadow = 1.0 + 0.8 * uHdr * (1.0 - smoothstep(0.0, 0.2, y0));
+  float y = mix(y0, yb, clamp(uNrLuma * isoK * hdrShadow, 0.0, 0.75));
+  vec3 ch = mix(c0 - vec3(y0), nrBlur - vec3(yb), clamp(uNrChroma * isoK * shadowK, 0.0, 0.95));
   vec3 c = max(vec3(y) + ch, 0.0);
+
+  if (uLocalTone > 0.0) {
+    float yNow = lum(c);
+    float midW = smoothstep(0.05, 0.18, yNow) * (1.0 - smoothstep(0.65, 0.95, yNow));
+    c = max(c + (c - wide) * (uLocalTone * midW), 0.0);
+  }
 
   if (uHdr > 0.0) {
     float loc = lum(wide);
     float lift = (0.07 * uHdr) * (1.0 - smoothstep(0.0, 0.22, loc));
     c += vec3(lift);
     float y2 = lum(c);
+    float flatK = 1.0 + 0.12 * uHdr;
+    float yFlat = mix(y2, 0.18 + (y2 - 0.18) / flatK, 0.35 * uHdr);
+    c *= yFlat / max(y2, 1.0e-4);
+    y2 = lum(c);
     c *= (y2 / (1.0 + max(y2 - 0.85, 0.0) * uHdr * 0.45)) / max(y2, 1.0e-4);
   }
 
   float ys = lum(c);
   c += vec3(0.007 * (1.0 - smoothstep(0.0, 0.10, ys)));
+
+  if (uShoulder > 0.0) {
+    float y4 = lum(c);
+    c *= 1.0 / (1.0 + max(y4 - uShoulderStart, 0.0) * uShoulder);
+  }
 
   c = toGamma(max(c, 0.0));
   float yg = lum(c);
@@ -361,6 +418,10 @@ void main() {
   float s = t * t * (3.0 - 2.0 * t);
   float yk = mix(t, s, k) + uMid * 0.15 * t;
   c *= (clamp(yk, 0.0, 1.4) / max(yg, 1.0e-4));
+
+  if (uUseLut > 0.5) {
+    c = applyLut(clamp(c, 0.0, 1.0));
+  }
 
   float ybG = pow(max(yb, 0.0), 1.0 / 2.2);
   float ywG = pow(max(lum(wide), 0.0), 1.0 / 2.2);
@@ -478,7 +539,41 @@ function makePipeline(canvas) {
     t.h = h;
   }
 
-  return { gl, lens, blur, sensor, demo, isp, srcTex, targets, useHalf, buf, resizeTarget };
+  const lutTex = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, lutTex);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array([128, 128, 128]));
+  let lutUploaded = false;
+  let lutSize = [1, 1];
+  function uploadLut() {
+    if (lutUploaded) return true;
+    if (!lutImage.complete || !lutImage.naturalWidth) return false;
+    const w = lutImage.naturalWidth;
+    const h = lutImage.naturalHeight;
+    const cnv = document.createElement("canvas");
+    cnv.width = w;
+    cnv.height = h;
+    const ctx = cnv.getContext("2d");
+    ctx.drawImage(lutImage, 0, 0);
+    const data = ctx.getImageData(0, 0, w, h);
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, lutTex);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+    const pixels = new Uint8Array(data.data.buffer, data.data.byteOffset, data.data.byteLength);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+    const err = gl.getError();
+    gl.activeTexture(gl.TEXTURE0);
+    lutSize = [w, h];
+    lutUploaded = err === 0;
+    return lutUploaded;
+  }
+
+  return { gl, lens, blur, sensor, demo, isp, srcTex, targets, useHalf, buf, resizeTarget, lutTex, uploadLut, get lutUploaded() { return lutUploaded; }, get lutSize() { return lutSize; } };
 }
 
 const $ = (id) => document.getElementById(id);
@@ -524,6 +619,8 @@ const state = {
   ratioId: "4:3",
   ev: 0,
   ae: null,
+  forceIso: 0,
+  skipLut: false,
 };
 
 const RATIOS = [
@@ -652,7 +749,13 @@ function autoExposure(look) {
   }
   if (t < tMin) t = tMin;
   iso = Math.min(look.isoMax, Math.max(look.isoMin, iso));
-  const electrons = look.fwc * (t / tRef) * apGain;
+  if (state.forceIso) {
+    iso = Math.min(look.isoMax, Math.max(look.isoMin, state.forceIso));
+  }
+  // Already-exposed sRGB (the preview, or a still) keeps mid-gray at ev=0
+  // so the fitted LUT sees the same tones it was trained on. ISO only
+  // sets noise; ev is a direct exposure bias.
+  const electrons = look.fwc * (look.isoMin / iso) * evBias;
   return { t, iso, yLin, electrons };
 }
 
@@ -806,15 +909,28 @@ function drawFrame(targetW, targetH, seed) {
   uni = useProg(isp);
   bindTex(targets[0].tex);
   gl.uniform1i(uni.uTex, 0);
+  const lutOk = renderer.uploadLut();
+  gl.activeTexture(gl.TEXTURE1);
+  gl.bindTexture(gl.TEXTURE_2D, renderer.lutTex);
+  gl.uniform1i(uni.uLUT, 1);
+  gl.activeTexture(gl.TEXTURE0);
   gl.uniform2f(uni.uRes, targetW, targetH);
   gl.uniform1f(uni.uNrLuma, look.nrLuma);
   gl.uniform1f(uni.uNrChroma, look.nrChroma);
+  gl.uniform1f(uni.uNrRadius, look.nrRadius == null ? 1 : look.nrRadius);
   gl.uniform1f(uni.uSharpen, look.sharpen);
   gl.uniform1f(uni.uHalo, look.halo);
   gl.uniform1f(uni.uContrast, look.contrast);
   gl.uniform1f(uni.uMid, look.mid);
+  gl.uniform1f(uni.uShoulder, look.shoulder || 0);
+  gl.uniform1f(uni.uShoulderStart, look.shoulderStart || 0.82);
   gl.uniform1f(uni.uHdr, look.hdr);
+  gl.uniform1f(uni.uLocalTone, look.localTone || 0);
   gl.uniform1f(uni.uIsoNorm, (ae.iso - look.isoMin) / Math.max(look.isoMax - look.isoMin, 1));
+  gl.uniform1f(uni.uLutRow, look.lutRow || 0);
+  const lutSize = renderer.lutSize;
+  gl.uniform2f(uni.uLutSize, lutSize[0], lutSize[1]);
+  gl.uniform1f(uni.uUseLut, (lutOk && !state.skipLut) ? 1 : 0);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   return true;
 }
@@ -1254,6 +1370,7 @@ window.__TEST__ = {
   LOOKS,
   RATIOS,
   state,
+  lutReady,
   setLook,
   setRatio,
   setEv,

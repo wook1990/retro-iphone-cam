@@ -82,21 +82,34 @@ def bar_frac(im, y_frac):
     y = luma(im)
     H, W = y.shape
     yi = int(round(y_frac * H))
-    band = y[max(0, yi - 4):yi + 5].mean(axis=0)
-    paper = np.percentile(band, 70)
-    xs = np.where(band < paper * 0.55)[0]
-    if len(xs) < 10:
-        return None
-    segs, start, prev = [], xs[0], xs[0]
-    for x in xs[1:]:
-        if x == prev + 1:
-            prev = x
-        else:
-            segs.append((start, prev))
-            start = prev = x
-    segs.append((start, prev))
-    a, b = max(segs, key=lambda t: t[1] - t[0])
-    return (b - a + 1) / W
+    best = None
+    for dy in range(-14, 15):
+        yj = yi + dy
+        if yj < 3 or yj >= H - 3:
+            continue
+        band = y[yj - 2:yj + 3].mean(axis=0)
+        paper = float(np.percentile(band, 80))
+        dark = float(np.percentile(band, 5))
+        if paper - dark < 12:
+            continue
+        thr = paper - 0.5 * (paper - dark)
+        xs = np.where(band < thr)[0]
+        if len(xs) < 8:
+            continue
+        segs, start, prev = [], xs[0], xs[0]
+        for x in xs[1:]:
+            if x == prev + 1:
+                prev = x
+            else:
+                segs.append((start, prev))
+                start = prev = x
+        segs.append((start, prev))
+        a, b = max(segs, key=lambda t: t[1] - t[0])
+        frac = (b - a + 1) / W
+        score = (paper - dark) * frac
+        if best is None or score > best[0]:
+            best = (score, frac)
+    return None if best is None else best[1]
 
 def evaluate(path, src_w, src_h, step, bar_w, bar_y_frac):
     im = np.asarray(Image.open(path).convert("RGB"), dtype=np.float32)
