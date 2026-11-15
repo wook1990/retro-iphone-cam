@@ -9,8 +9,10 @@ const LOOKS = [
     width: 3264,
     height: 2448,
     jpeg: 0.9,
-    jpegWork: 0.55,
-    resolve: 0.36,
+    resolve: 0.88,
+    aperture: 2.2,
+    evMin: -2,
+    evMax: 1,
     wb: [1.08, 1, 0.9],
     saturation: 1.1,
     contrast: 0.94,
@@ -21,21 +23,20 @@ const LOOKS = [
     vignette: 0.34,
     soft: 1.2,
     softMix: 0.18,
-    sharpen: 0.2,
-    halo: 0.06,
-    grain: 0.16,
-    chromaNoise: 0.055,
-    grainCell: 2.6,
-    chromaCell: 8,
-    smear: 0.28,
-    flatSmear: 0.22,
+    sharpen: 0.22,
+    halo: 0.07,
+    shot: 0.028,
+    read: 0.007,
+    nrLuma: 0.22,
+    nrChroma: 0.88,
+    isoBoost: 1.7,
     hdr: 0,
     clarity: 0,
     warmSplit: 0.04,
     cornerSoft: 0.55,
     ca: 0.004,
     clip: 0.68,
-    crush: 0.32,
+    crush: 0.28,
   },
   {
     id: "se",
@@ -44,8 +45,10 @@ const LOOKS = [
     width: 4032,
     height: 3024,
     jpeg: 0.9,
-    jpegWork: 0.62,
-    resolve: 0.42,
+    resolve: 0.92,
+    aperture: 2.2,
+    evMin: -2,
+    evMax: 1.3,
     wb: [0.98, 1, 1.05],
     saturation: 1.06,
     contrast: 1.05,
@@ -57,20 +60,19 @@ const LOOKS = [
     soft: 0.7,
     softMix: 0.1,
     sharpen: 0.42,
-    halo: 0.22,
-    grain: 0.12,
-    chromaNoise: 0.04,
-    grainCell: 2.2,
-    chromaCell: 6,
-    smear: 0.2,
-    flatSmear: 0.16,
+    halo: 0.2,
+    shot: 0.02,
+    read: 0.0045,
+    nrLuma: 0.16,
+    nrChroma: 0.68,
+    isoBoost: 1.5,
     hdr: 0.06,
     clarity: 0.04,
     warmSplit: 0,
     cornerSoft: 0.38,
     ca: 0.0025,
     clip: 0.4,
-    crush: 0.24,
+    crush: 0.22,
   },
   {
     id: "6s",
@@ -79,12 +81,14 @@ const LOOKS = [
     width: 4032,
     height: 3024,
     jpeg: 0.9,
-    jpegWork: 0.58,
-    resolve: 0.4,
+    resolve: 0.9,
+    aperture: 2.2,
+    evMin: -2,
+    evMax: 1.3,
     wb: [1.12, 1, 0.86],
     saturation: 1.2,
     contrast: 1.08,
-    brightness: 0.9,
+    brightness: 0.94,
     shadow: -0.14,
     highlight: 0.08,
     mid: -0.02,
@@ -93,19 +97,18 @@ const LOOKS = [
     softMix: 0.14,
     sharpen: 0.28,
     halo: 0.12,
-    grain: 0.15,
-    chromaNoise: 0.045,
-    grainCell: 2.4,
-    chromaCell: 7,
-    smear: 0.38,
-    flatSmear: 0.28,
+    shot: 0.022,
+    read: 0.005,
+    nrLuma: 0.22,
+    nrChroma: 0.7,
+    isoBoost: 1.5,
     hdr: 0,
     clarity: 0,
     warmSplit: 0.07,
     cornerSoft: 0.42,
     ca: 0.003,
     clip: 0.52,
-    crush: 0.42,
+    crush: 0.28,
   },
   {
     id: "7",
@@ -114,8 +117,10 @@ const LOOKS = [
     width: 4032,
     height: 3024,
     jpeg: 0.92,
-    jpegWork: 0.68,
-    resolve: 0.55,
+    resolve: 0.96,
+    aperture: 1.8,
+    evMin: -2,
+    evMax: 1.7,
     wb: [0.97, 1, 1.05],
     saturation: 1.05,
     contrast: 1.14,
@@ -126,21 +131,20 @@ const LOOKS = [
     vignette: 0.14,
     soft: 0.4,
     softMix: 0.06,
-    sharpen: 0.46,
-    halo: 0.24,
-    grain: 0.08,
-    chromaNoise: 0.018,
-    grainCell: 1.7,
-    chromaCell: 4,
-    smear: 0.12,
-    flatSmear: 0.08,
+    sharpen: 0.44,
+    halo: 0.2,
+    shot: 0.012,
+    read: 0.0025,
+    nrLuma: 0.1,
+    nrChroma: 0.5,
+    isoBoost: 1.0,
     hdr: 0.1,
     clarity: 0.08,
     warmSplit: 0,
     cornerSoft: 0.22,
     ca: 0.0015,
     clip: 0.34,
-    crush: 0.2,
+    crush: 0.16,
   },
   {
     id: "8",
@@ -149,8 +153,10 @@ const LOOKS = [
     width: 4032,
     height: 3024,
     jpeg: 0.93,
-    jpegWork: 0.76,
-    resolve: 0.64,
+    resolve: 0.98,
+    aperture: 1.8,
+    evMin: -2,
+    evMax: 2,
     wb: [1.07, 1.02, 0.9],
     saturation: 1.08,
     contrast: 1.12,
@@ -161,21 +167,20 @@ const LOOKS = [
     vignette: 0.1,
     soft: 0.28,
     softMix: 0.05,
-    sharpen: 0.5,
-    halo: 0.34,
-    grain: 0.05,
-    chromaNoise: 0.01,
-    grainCell: 1.4,
-    chromaCell: 3,
-    smear: 0.08,
-    flatSmear: 0.06,
+    sharpen: 0.48,
+    halo: 0.28,
+    shot: 0.008,
+    read: 0.0016,
+    nrLuma: 0.08,
+    nrChroma: 0.4,
+    isoBoost: 0.85,
     hdr: 0.16,
     clarity: 0.08,
     warmSplit: 0.07,
     cornerSoft: 0.16,
     ca: 0.001,
     clip: 0.18,
-    crush: 0.12,
+    crush: 0.1,
   },
   {
     id: "xs",
@@ -184,8 +189,10 @@ const LOOKS = [
     width: 4032,
     height: 3024,
     jpeg: 0.94,
-    jpegWork: 0.9,
-    resolve: 0.84,
+    resolve: 1,
+    aperture: 1.8,
+    evMin: -2,
+    evMax: 2,
     wb: [1.05, 1.01, 0.94],
     saturation: 1.06,
     contrast: 1.03,
@@ -196,14 +203,13 @@ const LOOKS = [
     vignette: 0.05,
     soft: 0.1,
     softMix: 0.03,
-    sharpen: 0.3,
+    sharpen: 0.28,
     halo: 0,
-    grain: 0.028,
-    chromaNoise: 0.004,
-    grainCell: 1.2,
-    chromaCell: 2.4,
-    smear: 0.04,
-    flatSmear: 0.03,
+    shot: 0.004,
+    read: 0.0008,
+    nrLuma: 0.05,
+    nrChroma: 0.25,
+    isoBoost: 0.5,
     hdr: 0.28,
     clarity: 0.14,
     warmSplit: 0.04,
@@ -242,12 +248,11 @@ uniform float uSoft;
 uniform float uSoftMix;
 uniform float uSharpen;
 uniform float uHalo;
-uniform float uGrain;
-uniform float uChromaNoise;
-uniform float uGrainCell;
-uniform float uChromaCell;
-uniform float uSmear;
-uniform float uFlatSmear;
+uniform float uShot;
+uniform float uRead;
+uniform float uNrLuma;
+uniform float uNrChroma;
+uniform float uIsoBoost;
 uniform float uHdr;
 uniform float uClarity;
 uniform float uWarmSplit;
@@ -256,22 +261,35 @@ uniform float uCA;
 uniform float uLowLight;
 uniform float uClip;
 uniform float uCrush;
+uniform float uEv;
 uniform float uSeed;
 varying vec2 vUv;
 
-float hash(vec2 p) {
-  return fract(sin(dot(p, vec2(127.1, 311.7)) + uSeed) * 43758.5453123);
+vec3 hash33(vec3 p3) {
+  p3 = fract(p3 * vec3(0.1031, 0.1030, 0.0973));
+  p3 += dot(p3, p3.yxz + 33.33);
+  return fract((p3.xxy + p3.yxx) * p3.zyx);
 }
 
-float vnoise(vec2 p) {
-  vec2 i = floor(p);
-  vec2 f = fract(p);
-  f = f * f * (3.0 - 2.0 * f);
-  float a = hash(i);
-  float b = hash(i + vec2(1.0, 0.0));
-  float c = hash(i + vec2(0.0, 1.0));
-  float d = hash(i + vec2(1.0, 1.0));
-  return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+float hash13(vec3 p3) {
+  p3 = fract(p3 * 0.1031);
+  p3 += dot(p3, p3.yzx + 33.33);
+  return fract((p3.x + p3.y) * p3.z);
+}
+
+vec3 gauss3(vec3 p) {
+  vec3 u = max(hash33(p), vec3(1.0e-4));
+  vec3 v = hash33(p + vec3(19.17, 7.31, 13.83));
+  vec3 g = sqrt(-2.0 * log(u)) * cos(6.28318530718 * v);
+  return clamp(g, -4.0, 4.0);
+}
+
+vec3 toLinear(vec3 s) {
+  return pow(max(s, 0.0), vec3(2.2));
+}
+
+vec3 toGamma(vec3 l) {
+  return pow(max(l, 0.0), vec3(1.0 / 2.2));
 }
 
 vec3 toSat(vec3 c, float s) {
@@ -282,7 +300,7 @@ vec3 toSat(vec3 c, float s) {
 vec3 texAt(vec2 uv) {
   vec2 src = uCropOrigin + uv * uCropSize;
   src.x = mix(src.x, uCropOrigin.x + uCropSize.x - (src.x - uCropOrigin.x), uMirror);
-  return texture2D(uTex, src).rgb;
+  return toLinear(texture2D(uTex, src).rgb);
 }
 
 vec3 blurAt(vec2 uv, float px) {
@@ -310,6 +328,16 @@ vec3 scaleLuma(vec3 c, float y2) {
   return max(c, 0.0) * r;
 }
 
+vec3 sensorNoise(vec3 pid, vec3 linear, float iso) {
+  vec3 indep = gauss3(pid);
+  float common = gauss3(pid + vec3(5.7, 2.1, 9.4)).x;
+  vec3 n = mix(indep, vec3(common), 0.58);
+  float yN = n.r * 0.2126 + n.g * 0.7152 + n.b * 0.0722;
+  n = vec3(yN) + (n - vec3(yN)) * 0.35;
+  vec3 sigma = uShot * sqrt(max(linear, 0.0) + 0.0002) + vec3(uRead);
+  return n * sigma * iso;
+}
+
 void main() {
   vec2 uv = vUv;
   vec2 vc = uv * 2.0 - 1.0;
@@ -326,13 +354,38 @@ void main() {
   vec3 blur = blurAt(uv, softPx);
   vec3 wide = blurAt(uv, softPx * 3.5 + 2.5);
   float corner = smoothstep(0.4, 1.35, dot(vc, vc));
-  vec3 c = mix(src, blur, clamp(uSoftMix, 0.0, 0.7));
-  c = mix(c, wide, corner * uCornerSoft);
+  vec3 lin = mix(src, blur, clamp(uSoftMix, 0.0, 0.7));
+  lin = mix(lin, wide, corner * uCornerSoft);
+  lin *= 1.0 - uVignette * smoothstep(0.35, 1.55, dot(vc, vc));
+  lin *= pow(2.0, uEv);
+  lin = max(lin, 0.0);
 
-  c *= 1.0 - uVignette * smoothstep(0.35, 1.55, dot(vc, vc));
+  float iso = (1.0 + uLowLight * uIsoBoost) * pow(2.0, max(uEv, 0.0) * 0.85);
 
-  c *= uWB;
-  c = max(c, 0.0);
+  float shLin = 1.0 - smoothstep(0.0, 0.35, lum(lin));
+  lin = mix(lin, blur * pow(2.0, uEv), shLin * uNrLuma * 0.7);
+
+  vec3 pid = vec3(floor(uv * uRes + 0.5), uSeed);
+  vec3 n0 = max(lin + sensorNoise(pid, lin, iso), 0.0);
+  vec3 n1 = max(lin + sensorNoise(pid + vec3(1.0, 0.0, 0.0), lin, iso), 0.0);
+  vec3 n2 = max(lin + sensorNoise(pid + vec3(-1.0, 0.0, 0.0), lin, iso), 0.0);
+  vec3 n3 = max(lin + sensorNoise(pid + vec3(0.0, 1.0, 0.0), lin, iso), 0.0);
+  vec3 n4 = max(lin + sensorNoise(pid + vec3(0.0, -1.0, 0.0), lin, iso), 0.0);
+  vec3 n5 = max(lin + sensorNoise(pid + vec3(2.0, 0.0, 0.0), lin, iso), 0.0);
+  vec3 n6 = max(lin + sensorNoise(pid + vec3(-2.0, 0.0, 0.0), lin, iso), 0.0);
+  vec3 n7 = max(lin + sensorNoise(pid + vec3(0.0, 2.0, 0.0), lin, iso), 0.0);
+  vec3 n8 = max(lin + sensorNoise(pid + vec3(0.0, -2.0, 0.0), lin, iso), 0.0);
+  vec3 nBlur = (n0 * 0.2 + (n1 + n2 + n3 + n4) * 0.125 + (n5 + n6 + n7 + n8) * 0.075);
+
+  float y0 = lum(n0);
+  float yb = lum(nBlur);
+  float y = mix(y0, yb, clamp(uNrLuma, 0.0, 0.7));
+  vec3 ch = mix(n0 - vec3(y0), nBlur - vec3(yb), clamp(uNrChroma, 0.0, 0.9));
+  lin = max(vec3(y) + ch, 0.0);
+
+  lin *= uWB;
+  vec3 c = toGamma(lin);
+
   c = scaleLuma(c, lum(c) * uBrightness);
   c = scaleLuma(c, (lum(c) - 0.5) * uContrast + 0.5 + uMid * 0.15);
 
@@ -343,8 +396,8 @@ void main() {
     c = scaleLuma(c, lum(c) + uShadow * sh * 0.11);
   }
   if (uCrush > 0.0) {
-    float y = lum(c);
-    float y2 = pow(max(y, 0.0), 1.0 + uCrush * 0.7) * (1.0 - uCrush * 0.08);
+    float yy = lum(c);
+    float y2 = pow(max(yy, 0.0), 1.0 + uCrush * 0.7) * (1.0 - uCrush * 0.08);
     c = scaleLuma(c, y2);
   }
 
@@ -365,8 +418,8 @@ void main() {
   }
 
   if (uHdr > 0.0) {
-    float y = lum(c);
-    float add = (0.22 * uHdr) * (1.0 - smoothstep(0.0, 0.35, y));
+    float yy = lum(c);
+    float add = (0.22 * uHdr) * (1.0 - smoothstep(0.0, 0.35, yy));
     c += vec3(add);
     float y3h = lum(c);
     float y4 = y3h / (1.0 + max(y3h - 0.75, 0.0) * uHdr);
@@ -378,32 +431,12 @@ void main() {
   c.r += uWarmSplit * smoothstep(0.45, 1.0, y3);
   c.b -= uWarmSplit * 0.6 * smoothstep(0.45, 1.0, y3);
 
-  float flatness = 1.0 - smoothstep(0.0, 0.06, abs(lum(src) - lum(blur)) + 0.5 * abs(lum(blur) - lum(wide)));
-  float shadowN = 1.0 - smoothstep(0.05, 0.42, y3);
-  float skyFlat = flatness * smoothstep(0.4, 0.85, y3);
-  float nAmp = (1.0 + uLowLight * 1.6) * (0.12 + 1.25 * shadowN + 0.5 * skyFlat);
-  vec2 gp = uv * uRes / max(uGrainCell, 1.0) + uSeed;
-  float gn = vnoise(gp) - 0.5;
-  float gn2 = vnoise(gp + 17.3) - 0.5;
-  c += (gn * 0.8 + gn2 * 0.2) * uGrain * nAmp * 1.7;
-
-  vec2 cp = uv * uRes / max(uChromaCell, 1.0) + uSeed;
-  float cr = hash(floor(cp) + 3.1) - 0.5;
-  float cb = hash(floor(cp) + 11.7) - 0.5;
-  float cAmp = (1.0 + uLowLight * 0.7) * (0.1 + 1.5 * shadowN);
-  c.r += cr * uChromaNoise * cAmp * 1.3;
-  c.b += cb * uChromaNoise * cAmp * 1.3;
-  c.g += (cr + cb) * 0.12 * uChromaNoise * cAmp;
-  c = max(c, 0.0);
-
-  float smearAmt = (sh * uSmear + flatness * uFlatSmear) * (1.0 + uLowLight * 1.1);
-  c = mix(c, blur, clamp(smearAmt, 0.0, 0.85));
-  c = mix(c, wide, clamp((1.0 - smoothstep(0.0, 0.22, lum(c))) * uSmear * 0.45 * (0.4 + uLowLight), 0.0, 0.6));
-
-  c = scaleLuma(c, lum(c) + (lum(c) - lum(blur)) * uSharpen);
-  float edge = max(lum(blur) - lum(wide), 0.0);
+  vec3 blurG = toGamma(blur * pow(2.0, uEv));
+  vec3 wideG = toGamma(wide * pow(2.0, uEv));
+  c = scaleLuma(c, lum(c) + (lum(c) - lum(blurG)) * uSharpen);
+  float edge = max(lum(blurG) - lum(wideG), 0.0);
   c += vec3(1.0, 0.98, 0.92) * edge * uHalo * 2.6;
-  c = scaleLuma(c, lum(c) + (lum(c) - lum(wide)) * uClarity);
+  c = scaleLuma(c, lum(c) + (lum(c) - lum(wideG)) * uClarity);
 
   gl_FragColor = vec4(clamp(c, 0.0, 1.0), 1.0);
 }
@@ -416,6 +449,7 @@ const glCanvas = $("gl");
 const stage = $("stage");
 const finder = $("finder");
 const ratioBtn = $("ratio");
+const evHud = $("ev-hud");
 const looksEl = $("looks");
 const lookMeta = $("look-meta");
 const thumbBtn = $("thumb");
@@ -449,6 +483,7 @@ const state = {
   lowLight: 0,
   lumaTick: 0,
   ratioId: "4:3",
+  ev: 0,
 };
 
 const RATIOS = [
@@ -530,8 +565,8 @@ function compile(gl, type, src) {
 const UNI_NAMES = [
   "uTex", "uRes", "uCropOrigin", "uCropSize", "uMirror", "uWB", "uSat", "uContrast",
   "uBrightness", "uShadow", "uHighlight", "uMid", "uVignette", "uSoft", "uSoftMix", "uSharpen",
-  "uHalo", "uGrain", "uChromaNoise", "uGrainCell", "uChromaCell", "uSmear", "uFlatSmear",
-  "uHdr", "uClarity", "uWarmSplit", "uCornerSoft", "uCA", "uLowLight", "uClip", "uCrush", "uSeed",
+  "uHalo", "uShot", "uRead", "uNrLuma", "uNrChroma", "uIsoBoost",
+  "uHdr", "uClarity", "uWarmSplit", "uCornerSoft", "uCA", "uLowLight", "uClip", "uCrush", "uEv", "uSeed",
 ];
 
 function makeGL(canvas) {
@@ -588,12 +623,11 @@ function applyLook(gl, uni, look, width, height, crop, mirror, seed) {
   gl.uniform1f(uni.uSoftMix, look.softMix);
   gl.uniform1f(uni.uSharpen, look.sharpen);
   gl.uniform1f(uni.uHalo, look.halo);
-  gl.uniform1f(uni.uGrain, look.grain);
-  gl.uniform1f(uni.uChromaNoise, look.chromaNoise);
-  gl.uniform1f(uni.uGrainCell, look.grainCell);
-  gl.uniform1f(uni.uChromaCell, look.chromaCell);
-  gl.uniform1f(uni.uSmear, look.smear);
-  gl.uniform1f(uni.uFlatSmear, look.flatSmear);
+  gl.uniform1f(uni.uShot, look.shot);
+  gl.uniform1f(uni.uRead, look.read);
+  gl.uniform1f(uni.uNrLuma, look.nrLuma);
+  gl.uniform1f(uni.uNrChroma, look.nrChroma);
+  gl.uniform1f(uni.uIsoBoost, look.isoBoost);
   gl.uniform1f(uni.uHdr, look.hdr);
   gl.uniform1f(uni.uClarity, look.clarity);
   gl.uniform1f(uni.uWarmSplit, look.warmSplit);
@@ -602,6 +636,7 @@ function applyLook(gl, uni, look, width, height, crop, mirror, seed) {
   gl.uniform1f(uni.uLowLight, state.lowLight);
   gl.uniform1f(uni.uClip, look.clip);
   gl.uniform1f(uni.uCrush, look.crush);
+  gl.uniform1f(uni.uEv, state.ev);
   gl.uniform1f(uni.uSeed, seed);
 }
 
@@ -723,6 +758,7 @@ function loop() {
   if (state.lumaTick % 12 === 1) updateLowLight();
   const look = lookById(state.lookId);
   const work = workingSize(view.width, view.height, look);
+  state.seed += 1.0;
   const ok = drawFrame(work.w, work.h, state.seed);
   if (ok) {
     const ctx = view.getContext("2d");
@@ -809,13 +845,81 @@ function renderLooks() {
   }
 }
 
+function formatEv(ev) {
+  const v = Math.round(ev * 10) / 10;
+  if (Math.abs(v) < 0.05) return "0.0";
+  return `${v > 0 ? "+" : ""}${v.toFixed(1)}`;
+}
+
+function clampEv(value, look) {
+  const v = Math.round(value * 10) / 10;
+  return Math.min(look.evMax, Math.max(look.evMin, v));
+}
+
+function evLimits(look) {
+  return { min: look.evMin, max: look.evMax, aperture: look.aperture };
+}
+
+function showEvHud() {
+  const look = lookById(state.lookId);
+  evHud.innerHTML = `<strong>${formatEv(state.ev)}</strong><span>f/${look.aperture}</span>`;
+  evHud.hidden = false;
+  clearTimeout(showEvHud.timer);
+  showEvHud.timer = setTimeout(() => {
+    evHud.hidden = true;
+  }, 1200);
+}
+
+function setEv(value, opts) {
+  const look = lookById(state.lookId);
+  state.ev = clampEv(value, look);
+  if (!opts || opts.hud !== false) showEvHud();
+  return state.ev;
+}
+
+function wireEv() {
+  let drag = null;
+  let lastTap = 0;
+  finder.addEventListener("pointerdown", (e) => {
+    if (e.button) return;
+    drag = { id: e.pointerId, y: e.clientY, ev: state.ev, moved: false };
+    try { finder.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+  });
+  finder.addEventListener("pointermove", (e) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const dy = drag.y - e.clientY;
+    if (!drag.moved && Math.abs(dy) < 8) return;
+    drag.moved = true;
+    setEv(drag.ev + dy / 72);
+  });
+  const endDrag = (e) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    if (!drag.moved) {
+      const now = Date.now();
+      if (now - lastTap < 320) {
+        setEv(0);
+        lastTap = 0;
+      } else {
+        lastTap = now;
+      }
+    }
+    drag = null;
+  };
+  finder.addEventListener("pointerup", endDrag);
+  finder.addEventListener("pointercancel", endDrag);
+}
+
 function setLook(id) {
+  const prev = state.ev;
   state.lookId = id;
   const look = lookById(id);
-  lookMeta.textContent = `${look.name} · ${look.year}`;
+  lookMeta.textContent = `${look.name} · ${look.year} · f/${look.aperture}`;
   for (const btn of looksEl.querySelectorAll(".look")) {
     btn.setAttribute("aria-selected", btn.dataset.id === id ? "true" : "false");
   }
+  const next = clampEv(state.ev, look);
+  const changed = Math.abs(prev - next) > 0.01;
+  setEv(next, { hud: changed });
 }
 
 function fileName(look) {
@@ -834,28 +938,6 @@ function canvasToBlob(canvas, type, quality) {
   });
 }
 
-async function blobToImage(blob) {
-  if (typeof createImageBitmap === "function") {
-    try {
-      return await createImageBitmap(blob);
-    } catch (err) {
-      /* fall through */
-    }
-  }
-  const url = URL.createObjectURL(blob);
-  try {
-    const img = new Image();
-    await new Promise((resolve, reject) => {
-      img.onload = () => resolve();
-      img.onerror = () => reject(new Error("사진을 읽지 못했어요."));
-      img.src = url;
-    });
-    return img;
-  } finally {
-    URL.revokeObjectURL(url);
-  }
-}
-
 async function renderCapture(width, height, seed) {
   const look = lookById(state.lookId);
   updateLowLight();
@@ -867,14 +949,7 @@ async function renderCapture(width, height, seed) {
   const ctx = captureCanvas.getContext("2d");
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
-  if (look.jpegWork < 0.98) {
-    const workBlob = await canvasToBlob(glCanvas, "image/jpeg", look.jpegWork);
-    const img = await blobToImage(workBlob);
-    ctx.drawImage(img, 0, 0, width, height);
-    if (img.close) img.close();
-  } else {
-    ctx.drawImage(glCanvas, 0, 0, width, height);
-  }
+  ctx.drawImage(glCanvas, 0, 0, width, height);
   return captureCanvas;
 }
 
@@ -965,6 +1040,7 @@ function wire() {
   renderLooks();
   setLook(state.lookId);
   setRatio(state.ratioId);
+  wireEv();
   ratioBtn.addEventListener("click", cycleRatio);
   shutterBtn.addEventListener("click", onShutter);
   flipBtn.addEventListener("click", onFlip);
@@ -1037,6 +1113,10 @@ window.__TEST__ = {
   state,
   setLook,
   setRatio,
+  setEv,
+  evLimits,
+  formatEv,
+  clampEv,
   cycleRatio,
   useImage,
   capture,

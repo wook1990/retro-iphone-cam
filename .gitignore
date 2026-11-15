@@ -15,3 +15,5 @@ samples/lowlight-*.jpg
 samples/contact-sheet.jpg
 samples/ui-mobile.png
 test/source-dim.jpg
+samples/analyze.json
+samples/original-dim.jpg

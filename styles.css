@@ -92,6 +92,32 @@ html, body {
   overflow: hidden;
   box-shadow: 0 0 0 1px rgba(243, 239, 232, 0.3);
   flex: 0 0 auto;
+  touch-action: none;
+}
+.ev-hud[hidden] { display: none; }
+.ev-hud {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  color: #f3efe8;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+  font-variant-numeric: tabular-nums;
+}
+.ev-hud strong {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.ev-hud span {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(243, 239, 232, 0.8);
 }
 .finder canvas {
   display: block;
