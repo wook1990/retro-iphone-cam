@@ -1,222 +1,101 @@
-/* 그때 아이폰 — old iPhone camera looks on a live web camera. */
+/* 그때 아이폰 — physically based old-iPhone camera simulation. */
 "use strict";
+
+/*
+  Sensor figures (public specs vs estimates):
+  - Pixel pitch, resolution, f-number, focal length: Apple / GSMArena /
+    AnandTech (Klug) / camera-wiki.org. 5s 8MP 1.5µm 1/3" f/2.2 4.12mm;
+    SE/6s 12MP 1.22µm 1/3" f/2.2 (SE shares the 6s-class IMX315);
+    7/8 12MP 1.22µm f/1.8 3.99mm + OIS; XS 12MP 1.4µm 1/2.55" f/1.8.
+  - ISO still ranges: EXIF / review surveys (Frame & Focal: 5s max 1600,
+    6s max 3200; Apple camera compatibility lists 8-series around ISO 22).
+    7 and XS still max ISO are estimates in the same family (20–3200, 16–3200).
+  - Full-well and read noise are not published by Apple. Estimated from
+    typical BSI CMOS scaling (~2.5–3.5 ke−/µm² well, read noise falling
+    across 2013–2018 processes). 5s ~6500 e− / 3.8 e−; 6s/SE ~4200 / 2.4;
+    7 ~4800 / 2.0; 8 ~5000 / 1.7; XS ~8000 / 1.5.
+  - Max handheld shutter: ~1/17s without OIS (5s, SE, 6s), ~1/4s with OIS
+    (7, 8, XS).
+*/
 
 const LOOKS = [
   {
-    id: "5s",
-    name: "5s",
-    year: "2013",
-    width: 3264,
-    height: 2448,
-    jpeg: 0.9,
-    resolve: 0.88,
-    aperture: 2.2,
-    evMin: -2,
-    evMax: 1,
+    id: "5s", name: "5s", year: "2013",
+    width: 3264, height: 2448, jpeg: 0.9,
+    aperture: 2.2, focalMm: 4.12, sensorDiagMm: 6.0, pitchUm: 1.5,
+    fwc: 6500, read: 3.8, fpn: 0.6,
+    isoMin: 32, isoMax: 1600, tMax: 1 / 17,
+    aberrPx: 3.6, flare: 0.08, ca: 0.0042,
+    nrLuma: 0.2, nrChroma: 0.9,
+    sharpen: 0.2, halo: 0.08,
     wb: [1.08, 1, 0.9],
-    saturation: 1.1,
-    contrast: 0.94,
-    brightness: 1.02,
-    shadow: -0.08,
-    highlight: 0.1,
-    mid: 0,
-    vignette: 0.34,
-    soft: 1.2,
-    softMix: 0.18,
-    sharpen: 0.22,
-    halo: 0.07,
-    shot: 0.028,
-    read: 0.007,
-    nrLuma: 0.22,
-    nrChroma: 0.88,
-    isoBoost: 1.7,
-    hdr: 0,
-    clarity: 0,
-    warmSplit: 0.04,
-    cornerSoft: 0.55,
-    ca: 0.004,
-    clip: 0.68,
-    crush: 0.28,
+    ccm: [1.12, -0.08, -0.04, -0.05, 1.04, 0.01, -0.06, -0.05, 1.08],
+    sat: 1.08, contrast: 0.96, mid: 0, hdr: 0,
   },
   {
-    id: "se",
-    name: "SE",
-    year: "2016",
-    width: 4032,
-    height: 3024,
-    jpeg: 0.9,
-    resolve: 0.92,
-    aperture: 2.2,
-    evMin: -2,
-    evMax: 1.3,
+    id: "se", name: "SE", year: "2016",
+    width: 4032, height: 3024, jpeg: 0.9,
+    aperture: 2.2, focalMm: 4.15, sensorDiagMm: 6.0, pitchUm: 1.22,
+    fwc: 4200, read: 2.3, fpn: 0.4,
+    isoMin: 25, isoMax: 3200, tMax: 1 / 17,
+    aberrPx: 2.3, flare: 0.05, ca: 0.0026,
+    nrLuma: 0.14, nrChroma: 0.52,
+    sharpen: 0.42, halo: 0.2,
     wb: [0.98, 1, 1.05],
-    saturation: 1.06,
-    contrast: 1.05,
-    brightness: 1,
-    shadow: -0.05,
-    highlight: 0.04,
-    mid: 0.02,
-    vignette: 0.2,
-    soft: 0.7,
-    softMix: 0.1,
-    sharpen: 0.42,
-    halo: 0.2,
-    shot: 0.02,
-    read: 0.0045,
-    nrLuma: 0.16,
-    nrChroma: 0.68,
-    isoBoost: 1.5,
-    hdr: 0.06,
-    clarity: 0.04,
-    warmSplit: 0,
-    cornerSoft: 0.38,
-    ca: 0.0025,
-    clip: 0.4,
-    crush: 0.22,
+    ccm: [1.02, -0.03, 0.01, -0.04, 1.03, 0.01, -0.02, -0.02, 1.1],
+    sat: 1.05, contrast: 1.05, mid: 0.02, hdr: 0,
   },
   {
-    id: "6s",
-    name: "6s",
-    year: "2015",
-    width: 4032,
-    height: 3024,
-    jpeg: 0.9,
-    resolve: 0.9,
-    aperture: 2.2,
-    evMin: -2,
-    evMax: 1.3,
+    id: "6s", name: "6s", year: "2015",
+    width: 4032, height: 3024, jpeg: 0.9,
+    aperture: 2.2, focalMm: 4.15, sensorDiagMm: 6.0, pitchUm: 1.22,
+    fwc: 4200, read: 2.4, fpn: 0.45,
+    isoMin: 25, isoMax: 3200, tMax: 1 / 17,
+    aberrPx: 2.5, flare: 0.06, ca: 0.003,
+    nrLuma: 0.18, nrChroma: 0.7,
+    sharpen: 0.28, halo: 0.12,
     wb: [1.12, 1, 0.86],
-    saturation: 1.2,
-    contrast: 1.08,
-    brightness: 0.94,
-    shadow: -0.14,
-    highlight: 0.08,
-    mid: -0.02,
-    vignette: 0.26,
-    soft: 0.9,
-    softMix: 0.14,
-    sharpen: 0.28,
-    halo: 0.12,
-    shot: 0.022,
-    read: 0.005,
-    nrLuma: 0.22,
-    nrChroma: 0.7,
-    isoBoost: 1.5,
-    hdr: 0,
-    clarity: 0,
-    warmSplit: 0.07,
-    cornerSoft: 0.42,
-    ca: 0.003,
-    clip: 0.52,
-    crush: 0.28,
+    ccm: [1.16, -0.1, -0.06, -0.06, 1.05, 0.01, -0.08, -0.06, 1.04],
+    sat: 1.16, contrast: 1.04, mid: 0.02, hdr: 0,
   },
   {
-    id: "7",
-    name: "7",
-    year: "2016",
-    width: 4032,
-    height: 3024,
-    jpeg: 0.92,
-    resolve: 0.96,
-    aperture: 1.8,
-    evMin: -2,
-    evMax: 1.7,
+    id: "7", name: "7", year: "2016",
+    width: 4032, height: 3024, jpeg: 0.92,
+    aperture: 1.8, focalMm: 3.99, sensorDiagMm: 6.0, pitchUm: 1.22,
+    fwc: 4800, read: 2.0, fpn: 0.3,
+    isoMin: 20, isoMax: 3200, tMax: 1 / 4,
+    aberrPx: 1.5, flare: 0.03, ca: 0.0016,
+    nrLuma: 0.09, nrChroma: 0.36,
+    sharpen: 0.42, halo: 0.18,
     wb: [0.97, 1, 1.05],
-    saturation: 1.05,
-    contrast: 1.14,
-    brightness: 1.08,
-    shadow: -0.03,
-    highlight: 0.05,
-    mid: 0.03,
-    vignette: 0.14,
-    soft: 0.4,
-    softMix: 0.06,
-    sharpen: 0.44,
-    halo: 0.2,
-    shot: 0.012,
-    read: 0.0025,
-    nrLuma: 0.1,
-    nrChroma: 0.5,
-    isoBoost: 1.0,
-    hdr: 0.1,
-    clarity: 0.08,
-    warmSplit: 0,
-    cornerSoft: 0.22,
-    ca: 0.0015,
-    clip: 0.34,
-    crush: 0.16,
+    ccm: [1.01, -0.03, 0.02, -0.03, 1.03, 0.0, -0.02, -0.03, 1.08],
+    sat: 1.04, contrast: 1.06, mid: 0.02, hdr: 0,
   },
   {
-    id: "8",
-    name: "8",
-    year: "2017",
-    width: 4032,
-    height: 3024,
-    jpeg: 0.93,
-    resolve: 0.98,
-    aperture: 1.8,
-    evMin: -2,
-    evMax: 2,
+    id: "8", name: "8", year: "2017",
+    width: 4032, height: 3024, jpeg: 0.93,
+    aperture: 1.8, focalMm: 3.99, sensorDiagMm: 6.0, pitchUm: 1.22,
+    fwc: 5000, read: 1.7, fpn: 0.25,
+    isoMin: 22, isoMax: 2500, tMax: 1 / 4,
+    aberrPx: 1.2, flare: 0.025, ca: 0.0012,
+    nrLuma: 0.07, nrChroma: 0.28,
+    sharpen: 0.48, halo: 0.28,
     wb: [1.07, 1.02, 0.9],
-    saturation: 1.08,
-    contrast: 1.12,
-    brightness: 1.04,
-    shadow: -0.02,
-    highlight: -0.05,
-    mid: 0.02,
-    vignette: 0.1,
-    soft: 0.28,
-    softMix: 0.05,
-    sharpen: 0.48,
-    halo: 0.28,
-    shot: 0.008,
-    read: 0.0016,
-    nrLuma: 0.08,
-    nrChroma: 0.4,
-    isoBoost: 0.85,
-    hdr: 0.16,
-    clarity: 0.08,
-    warmSplit: 0.07,
-    cornerSoft: 0.16,
-    ca: 0.001,
-    clip: 0.18,
-    crush: 0.1,
+    ccm: [1.08, -0.06, -0.02, -0.04, 1.04, 0.0, -0.05, -0.04, 1.02],
+    sat: 1.07, contrast: 1.06, mid: 0.02, hdr: 0,
   },
   {
-    id: "xs",
-    name: "XS",
-    year: "2018",
-    width: 4032,
-    height: 3024,
-    jpeg: 0.94,
-    resolve: 1,
-    aperture: 1.8,
-    evMin: -2,
-    evMax: 2,
+    id: "xs", name: "XS", year: "2018",
+    width: 4032, height: 3024, jpeg: 0.94,
+    aperture: 1.8, focalMm: 4.25, sensorDiagMm: 7.06, pitchUm: 1.4,
+    fwc: 8000, read: 1.5, fpn: 0.18,
+    isoMin: 16, isoMax: 3200, tMax: 1 / 4,
+    aberrPx: 0.7, flare: 0.015, ca: 0.0008,
+    nrLuma: 0.04, nrChroma: 0.16,
+    sharpen: 0.28, halo: 0.03,
     wb: [1.05, 1.01, 0.94],
-    saturation: 1.06,
-    contrast: 1.03,
-    brightness: 1.02,
-    shadow: 0.1,
-    highlight: -0.12,
-    mid: 0.03,
-    vignette: 0.05,
-    soft: 0.1,
-    softMix: 0.03,
-    sharpen: 0.28,
-    halo: 0,
-    shot: 0.004,
-    read: 0.0008,
-    nrLuma: 0.05,
-    nrChroma: 0.25,
-    isoBoost: 0.5,
-    hdr: 0.28,
-    clarity: 0.14,
-    warmSplit: 0.04,
-    cornerSoft: 0.08,
-    ca: 0.0008,
-    clip: 0,
-    crush: 0,
+    ccm: [1.04, -0.03, -0.01, -0.03, 1.02, 0.01, -0.03, -0.03, 1.04],
+    sat: 1.05, contrast: 1.02, mid: 0.02, hdr: 0.16,
   },
 ];
 
@@ -229,113 +108,58 @@ void main() {
 }
 `;
 
-const FS = `
+const COMMON = `
 precision highp float;
 uniform sampler2D uTex;
 uniform vec2 uRes;
-uniform vec2 uCropOrigin;
-uniform vec2 uCropSize;
-uniform float uMirror;
-uniform vec3 uWB;
-uniform float uSat;
-uniform float uContrast;
-uniform float uBrightness;
-uniform float uShadow;
-uniform float uHighlight;
-uniform float uMid;
-uniform float uVignette;
-uniform float uSoft;
-uniform float uSoftMix;
-uniform float uSharpen;
-uniform float uHalo;
-uniform float uShot;
-uniform float uRead;
-uniform float uNrLuma;
-uniform float uNrChroma;
-uniform float uIsoBoost;
-uniform float uHdr;
-uniform float uClarity;
-uniform float uWarmSplit;
-uniform float uCornerSoft;
-uniform float uCA;
-uniform float uLowLight;
-uniform float uClip;
-uniform float uCrush;
-uniform float uEv;
-uniform float uSeed;
+uniform float uLinEnc;
 varying vec2 vUv;
 
+vec3 encLin(vec3 c) {
+  return uLinEnc > 0.5 ? sqrt(max(c, 0.0)) : c;
+}
+vec3 decLin(vec3 c) {
+  return uLinEnc > 0.5 ? c * c : max(c, 0.0);
+}
+float lum(vec3 c) {
+  return dot(c, vec3(0.2126, 0.7152, 0.0722));
+}
+vec3 toLinear(vec3 s) {
+  return pow(max(s, 0.0), vec3(2.2));
+}
+vec3 toGamma(vec3 l) {
+  return pow(max(l, 0.0), vec3(1.0 / 2.2));
+}
 vec3 hash33(vec3 p3) {
   p3 = fract(p3 * vec3(0.1031, 0.1030, 0.0973));
   p3 += dot(p3, p3.yxz + 33.33);
   return fract((p3.xxy + p3.yxx) * p3.zyx);
 }
-
 float hash13(vec3 p3) {
   p3 = fract(p3 * 0.1031);
   p3 += dot(p3, p3.yzx + 33.33);
   return fract((p3.x + p3.y) * p3.z);
 }
-
 vec3 gauss3(vec3 p) {
   vec3 u = max(hash33(p), vec3(1.0e-4));
   vec3 v = hash33(p + vec3(19.17, 7.31, 13.83));
-  vec3 g = sqrt(-2.0 * log(u)) * cos(6.28318530718 * v);
-  return clamp(g, -4.0, 4.0);
+  return clamp(sqrt(-2.0 * log(u)) * cos(6.28318530718 * v), -4.0, 4.0);
 }
+`;
 
-vec3 toLinear(vec3 s) {
-  return pow(max(s, 0.0), vec3(2.2));
-}
+const FS_LENS = COMMON + `
+uniform vec2 uCropOrigin;
+uniform vec2 uCropSize;
+uniform float uMirror;
+uniform float uCA;
+uniform float uTanMax;
+uniform float uFlare;
+varying vec2 vUvDummy;
 
-vec3 toGamma(vec3 l) {
-  return pow(max(l, 0.0), vec3(1.0 / 2.2));
-}
-
-vec3 toSat(vec3 c, float s) {
-  float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
-  return mix(vec3(l), c, s);
-}
-
-vec3 texAt(vec2 uv) {
-  vec2 src = uCropOrigin + uv * uCropSize;
-  src.x = mix(src.x, uCropOrigin.x + uCropSize.x - (src.x - uCropOrigin.x), uMirror);
-  return toLinear(texture2D(uTex, src).rgb);
-}
-
-vec3 blurAt(vec2 uv, float px) {
-  vec2 d = vec2(px) / uRes;
-  vec3 a = texAt(uv) * 0.25;
-  a += texAt(uv + vec2(d.x, 0.0)) * 0.125;
-  a += texAt(uv - vec2(d.x, 0.0)) * 0.125;
-  a += texAt(uv + vec2(0.0, d.y)) * 0.125;
-  a += texAt(uv - vec2(0.0, d.y)) * 0.125;
-  a += texAt(uv + d) * 0.0625;
-  a += texAt(uv - d) * 0.0625;
-  a += texAt(uv + vec2(d.x, -d.y)) * 0.0625;
-  a += texAt(uv + vec2(-d.x, d.y)) * 0.0625;
-  return a;
-}
-
-float lum(vec3 c) {
-  return dot(c, vec3(0.2126, 0.7152, 0.0722));
-}
-
-vec3 scaleLuma(vec3 c, float y2) {
-  float y = max(lum(max(c, 0.0)), 0.0001);
-  y2 = clamp(y2, 0.0, 1.5);
-  float r = clamp(y2 / y, 0.0, 3.0);
-  return max(c, 0.0) * r;
-}
-
-vec3 sensorNoise(vec3 pid, vec3 linear, float iso) {
-  vec3 indep = gauss3(pid);
-  float common = gauss3(pid + vec3(5.7, 2.1, 9.4)).x;
-  vec3 n = mix(indep, vec3(common), 0.58);
-  float yN = n.r * 0.2126 + n.g * 0.7152 + n.b * 0.0722;
-  n = vec3(yN) + (n - vec3(yN)) * 0.35;
-  vec3 sigma = uShot * sqrt(max(linear, 0.0) + 0.0002) + vec3(uRead);
-  return n * sigma * iso;
+vec3 srcLin(vec2 uv) {
+  vec2 t = uCropOrigin + uv * uCropSize;
+  t.x = mix(t.x, uCropOrigin.x + uCropSize.x - (t.x - uCropOrigin.x), uMirror);
+  return toLinear(texture2D(uTex, t).rgb);
 }
 
 void main() {
@@ -344,103 +168,303 @@ void main() {
   float rad = length(vc);
   vec2 dir = rad > 0.0001 ? vc / rad : vec2(0.0);
   float ca = uCA * rad * rad;
+  vec3 c;
+  c.r = srcLin(uv + dir * ca).r;
+  c.g = srcLin(uv).g;
+  c.b = srcLin(uv - dir * ca).b;
+  float theta = atan(uTanMax * rad);
+  float vig = pow(max(cos(theta), 0.0), 4.0);
+  c *= vig;
+  if (uFlare > 0.001) {
+    vec3 h = vec3(0.0);
+    h += srcLin(uv + dir * 0.12);
+    h += srcLin(uv - dir * 0.12);
+    h += srcLin(uv + vec2(dir.y, -dir.x) * 0.1);
+    h += srcLin(uv + vec2(-dir.y, dir.x) * 0.1);
+    h *= 0.25;
+    c += max(h - vec3(0.55), 0.0) * uFlare;
+  }
+  gl_FragColor = vec4(encLin(max(c, 0.0)), 1.0);
+}
+`;
 
-  vec3 src;
-  src.r = texAt(uv + dir * ca).r;
-  src.g = texAt(uv).g;
-  src.b = texAt(uv - dir * ca).b;
+const FS_BLUR = COMMON + `
+uniform vec2 uDir;
+uniform float uDiffPx;
+uniform float uAberrPx;
 
-  float softPx = max(uSoft, 1.0);
-  vec3 blur = blurAt(uv, softPx);
-  vec3 wide = blurAt(uv, softPx * 3.5 + 2.5);
-  float corner = smoothstep(0.4, 1.35, dot(vc, vc));
-  vec3 lin = mix(src, blur, clamp(uSoftMix, 0.0, 0.7));
-  lin = mix(lin, wide, corner * uCornerSoft);
-  lin *= 1.0 - uVignette * smoothstep(0.35, 1.55, dot(vc, vc));
-  lin *= pow(2.0, uEv);
-  lin = max(lin, 0.0);
+void main() {
+  vec2 uv = vUv;
+  vec2 vc = uv * 2.0 - 1.0;
+  float r2 = dot(vc, vc);
+  float sigma = uDiffPx * 0.45 + uAberrPx * r2;
+  vec2 step = uDir / uRes;
+  vec3 acc = decLin(texture2D(uTex, uv).rgb);
+  float wsum = 1.0;
+  // 9-tap Gaussian, constant loop
+  for (int i = 1; i <= 4; i++) {
+    float x = float(i);
+    float w = exp(-0.5 * x * x / (sigma * sigma + 0.15));
+    acc += decLin(texture2D(uTex, uv + step * x).rgb) * w;
+    acc += decLin(texture2D(uTex, uv - step * x).rgb) * w;
+    wsum += 2.0 * w;
+  }
+  gl_FragColor = vec4(encLin(acc / wsum), 1.0);
+}
+`;
 
-  float iso = (1.0 + uLowLight * uIsoBoost) * pow(2.0, max(uEv, 0.0) * 0.85);
+const FS_SENSOR = COMMON + `
+uniform float uFwc;
+uniform float uRead;
+uniform float uFpn;
+uniform float uIso;
+uniform float uIsoMin;
+uniform float uElectrons;
+uniform float uSeed;
 
-  float shLin = 1.0 - smoothstep(0.0, 0.35, lum(lin));
-  lin = mix(lin, blur * pow(2.0, uEv), shLin * uNrLuma * 0.7);
+void main() {
+  vec2 pix = floor(vUv * uRes);
+  vec3 lin = decLin(texture2D(uTex, vUv).rgb);
+  float mx = mod(pix.x, 2.0);
+  float my = mod(pix.y, 2.0);
+  float eMean;
+  if (mx < 0.5 && my < 0.5) eMean = lin.r;
+  else if (mx > 0.5 && my > 0.5) eMean = lin.b;
+  else eMean = lin.g;
+  eMean *= uElectrons;
+  vec3 pid = vec3(pix, uSeed);
+  float gShot = gauss3(pid).x;
+  float sigma = sqrt(max(eMean, 0.0));
+  float e = eMean + gShot * sigma;
+  e += gauss3(pid + vec3(3.1, 8.7, 1.4)).y * uRead;
+  e += (hash13(vec3(pix, 11.0)) - 0.5) * uFpn * 2.0;
+  e = clamp(e, 0.0, uFwc);
+  float gain = uIso / max(uIsoMin, 1.0);
+  float dn = floor(clamp(e * gain * (1023.0 / uFwc), 0.0, 1023.0) + 0.5);
+  float v = dn / 1023.0;
+  gl_FragColor = vec4(v, v, v, 1.0);
+}
+`;
 
-  vec3 pid = vec3(floor(uv * uRes + 0.5), uSeed);
-  vec3 n0 = max(lin + sensorNoise(pid, lin, iso), 0.0);
-  vec3 n1 = max(lin + sensorNoise(pid + vec3(1.0, 0.0, 0.0), lin, iso), 0.0);
-  vec3 n2 = max(lin + sensorNoise(pid + vec3(-1.0, 0.0, 0.0), lin, iso), 0.0);
-  vec3 n3 = max(lin + sensorNoise(pid + vec3(0.0, 1.0, 0.0), lin, iso), 0.0);
-  vec3 n4 = max(lin + sensorNoise(pid + vec3(0.0, -1.0, 0.0), lin, iso), 0.0);
-  vec3 n5 = max(lin + sensorNoise(pid + vec3(2.0, 0.0, 0.0), lin, iso), 0.0);
-  vec3 n6 = max(lin + sensorNoise(pid + vec3(-2.0, 0.0, 0.0), lin, iso), 0.0);
-  vec3 n7 = max(lin + sensorNoise(pid + vec3(0.0, 2.0, 0.0), lin, iso), 0.0);
-  vec3 n8 = max(lin + sensorNoise(pid + vec3(0.0, -2.0, 0.0), lin, iso), 0.0);
-  vec3 nBlur = (n0 * 0.2 + (n1 + n2 + n3 + n4) * 0.125 + (n5 + n6 + n7 + n8) * 0.075);
+const FS_DEMO = COMMON + `
+uniform vec3 uWB;
+uniform mat3 uCCM;
+uniform float uSat;
 
-  float y0 = lum(n0);
-  float yb = lum(nBlur);
-  float y = mix(y0, yb, clamp(uNrLuma, 0.0, 0.7));
-  vec3 ch = mix(n0 - vec3(y0), nBlur - vec3(yb), clamp(uNrChroma, 0.0, 0.9));
-  lin = max(vec3(y) + ch, 0.0);
+float rawAt(vec2 uv) {
+  return texture2D(uTex, uv).r;
+}
 
-  lin *= uWB;
-  vec3 c = toGamma(lin);
-
-  c = scaleLuma(c, lum(c) * uBrightness);
-  c = scaleLuma(c, (lum(c) - 0.5) * uContrast + 0.5 + uMid * 0.15);
-
-  float sh = 1.0 - smoothstep(0.0, 0.42, lum(c));
-  if (uShadow > 0.0) {
-    c += vec3(uShadow * sh * 0.14);
+vec3 demosaic(vec2 uv) {
+  vec2 px = 1.0 / uRes;
+  vec2 pix = floor(uv * uRes);
+  float mx = mod(pix.x, 2.0);
+  float my = mod(pix.y, 2.0);
+  float c = rawAt(uv);
+  float l = rawAt(uv + vec2(-px.x, 0.0));
+  float r = rawAt(uv + vec2(px.x, 0.0));
+  float d = rawAt(uv + vec2(0.0, -px.y));
+  float u = rawAt(uv + vec2(0.0, px.y));
+  float ul = rawAt(uv + vec2(-px.x, px.y));
+  float ur = rawAt(uv + vec2(px.x, px.y));
+  float dl = rawAt(uv + vec2(-px.x, -px.y));
+  float dr = rawAt(uv + vec2(px.x, -px.y));
+  float gh = 0.5 * (l + r);
+  float gv = 0.5 * (u + d);
+  float dh = abs(l - r);
+  float dv = abs(u - d);
+  float gEdge = dh < dv ? gh : gv;
+  vec3 rgb;
+  if (mx < 0.5 && my < 0.5) {
+    rgb = vec3(c, gEdge, 0.25 * (ul + ur + dl + dr));
+  } else if (mx > 0.5 && my > 0.5) {
+    rgb = vec3(0.25 * (ul + ur + dl + dr), gEdge, c);
+  } else if (mx > 0.5 && my < 0.5) {
+    rgb = vec3(0.5 * (l + r), c, 0.5 * (u + d));
   } else {
-    c = scaleLuma(c, lum(c) + uShadow * sh * 0.11);
+    rgb = vec3(0.5 * (u + d), c, 0.5 * (l + r));
   }
-  if (uCrush > 0.0) {
-    float yy = lum(c);
-    float y2 = pow(max(yy, 0.0), 1.0 + uCrush * 0.7) * (1.0 - uCrush * 0.08);
-    c = scaleLuma(c, y2);
-  }
+  return rgb;
+}
 
-  float yHi = lum(c);
-  if (uClip > 0.0) {
-    float cap = mix(1.05, 0.86, clamp(uClip, 0.0, 1.0));
-    float y2 = mix(yHi, cap, smoothstep(cap - 0.07, cap, yHi));
-    c = scaleLuma(c, min(y2, cap));
-  } else if (uHighlight > 0.0) {
-    float hi = smoothstep(0.62, 1.0, yHi);
-    float y2 = mix(yHi, 1.0, hi * uHighlight * 0.7);
-    y2 = min(y2, mix(1.2, 0.97, clamp(uHighlight, 0.0, 1.0)));
-    c = scaleLuma(c, y2);
-  } else {
-    float hi = smoothstep(0.62, 1.0, yHi);
-    float y2 = mix(yHi, yHi / (1.0 + max(yHi - 0.7, 0.0) * (-uHighlight * 3.0)), hi);
-    c = scaleLuma(c, y2);
-  }
+void main() {
+  vec3 c = demosaic(vUv);
+  c *= uWB;
+  c = uCCM * c;
+  float y = lum(max(c, 0.0));
+  c = mix(vec3(y), c, uSat);
+  gl_FragColor = vec4(encLin(max(c, 0.0)), 1.0);
+}
+`;
+
+const FS_ISP = COMMON + `
+uniform float uNrLuma;
+uniform float uNrChroma;
+uniform float uSharpen;
+uniform float uHalo;
+uniform float uContrast;
+uniform float uMid;
+uniform float uHdr;
+uniform float uIsoNorm;
+
+void main() {
+  vec2 px = 1.0 / uRes;
+  vec3 c0 = decLin(texture2D(uTex, vUv).rgb);
+  vec3 n1 = decLin(texture2D(uTex, vUv + vec2(px.x, 0.0)).rgb);
+  vec3 n2 = decLin(texture2D(uTex, vUv - vec2(px.x, 0.0)).rgb);
+  vec3 n3 = decLin(texture2D(uTex, vUv + vec2(0.0, px.y)).rgb);
+  vec3 n4 = decLin(texture2D(uTex, vUv - vec2(0.0, px.y)).rgb);
+  vec3 n5 = decLin(texture2D(uTex, vUv + vec2(2.0 * px.x, 0.0)).rgb);
+  vec3 n6 = decLin(texture2D(uTex, vUv - vec2(2.0 * px.x, 0.0)).rgb);
+  vec3 n7 = decLin(texture2D(uTex, vUv + vec2(0.0, 2.0 * px.y)).rgb);
+  vec3 n8 = decLin(texture2D(uTex, vUv - vec2(0.0, 2.0 * px.y)).rgb);
+  vec3 blur = (c0 * 0.2 + (n1 + n2 + n3 + n4) * 0.125 + (n5 + n6 + n7 + n8) * 0.075);
+  vec3 wide = (c0 + n1 + n2 + n3 + n4 + n5 + n6 + n7 + n8) / 9.0;
+  float y0 = lum(c0);
+  float yb = lum(blur);
+  float isoK = 0.45 + 0.55 * clamp(uIsoNorm, 0.0, 1.0);
+  float shadowK = 1.0 + 0.4 * (1.0 - smoothstep(0.03, 0.28, y0));
+  float y = mix(y0, yb, clamp(uNrLuma * isoK, 0.0, 0.7));
+  vec3 ch = mix(c0 - vec3(y0), blur - vec3(yb), clamp(uNrChroma * isoK * shadowK, 0.0, 0.95));
+  vec3 c = max(vec3(y) + ch, 0.0);
 
   if (uHdr > 0.0) {
-    float yy = lum(c);
-    float add = (0.22 * uHdr) * (1.0 - smoothstep(0.0, 0.35, yy));
-    c += vec3(add);
-    float y3h = lum(c);
-    float y4 = y3h / (1.0 + max(y3h - 0.75, 0.0) * uHdr);
-    c = scaleLuma(c, y4);
+    float loc = lum(wide);
+    float lift = (0.07 * uHdr) * (1.0 - smoothstep(0.0, 0.22, loc));
+    c += vec3(lift);
+    float y2 = lum(c);
+    c *= (y2 / (1.0 + max(y2 - 0.85, 0.0) * uHdr * 0.45)) / max(y2, 1.0e-4);
   }
 
-  c = toSat(c, uSat);
-  float y3 = lum(max(c, 0.0));
-  c.r += uWarmSplit * smoothstep(0.45, 1.0, y3);
-  c.b -= uWarmSplit * 0.6 * smoothstep(0.45, 1.0, y3);
+  float ys = lum(c);
+  c += vec3(0.007 * (1.0 - smoothstep(0.0, 0.10, ys)));
 
-  vec3 blurG = toGamma(blur * pow(2.0, uEv));
-  vec3 wideG = toGamma(wide * pow(2.0, uEv));
-  c = scaleLuma(c, lum(c) + (lum(c) - lum(blurG)) * uSharpen);
-  float edge = max(lum(blurG) - lum(wideG), 0.0);
-  c += vec3(1.0, 0.98, 0.92) * edge * uHalo * 2.6;
-  c = scaleLuma(c, lum(c) + (lum(c) - lum(wideG)) * uClarity);
+  c = toGamma(max(c, 0.0));
+  float yg = lum(c);
+  float t = clamp(yg, 0.0, 1.0);
+  float k = clamp((uContrast - 1.0) * 1.8, -1.0, 1.0);
+  float s = t * t * (3.0 - 2.0 * t);
+  float yk = mix(t, s, k) + uMid * 0.15 * t;
+  c *= (clamp(yk, 0.0, 1.4) / max(yg, 1.0e-4));
+
+  float ybG = pow(max(yb, 0.0), 1.0 / 2.2);
+  float ywG = pow(max(lum(wide), 0.0), 1.0 / 2.2);
+  float yNow = lum(c);
+  c *= (yNow + (yNow - ybG) * uSharpen) / max(yNow, 1.0e-4);
+  float edge = max(ybG - ywG, 0.0);
+  c += vec3(1.0, 0.98, 0.92) * edge * uHalo * 2.4;
 
   gl_FragColor = vec4(clamp(c, 0.0, 1.0), 1.0);
 }
 `;
+
+function compile(gl, type, src) {
+  const sh = gl.createShader(type);
+  gl.shaderSource(sh, src);
+  gl.compileShader(sh);
+  if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+    throw new Error(gl.getShaderInfoLog(sh) || "shader compile failed");
+  }
+  return sh;
+}
+
+function makeProgram(gl, fs) {
+  const prog = gl.createProgram();
+  gl.attachShader(prog, compile(gl, gl.VERTEX_SHADER, VS));
+  gl.attachShader(prog, compile(gl, gl.FRAGMENT_SHADER, fs));
+  gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+    throw new Error(gl.getProgramInfoLog(prog) || "shader link failed");
+  }
+  const uni = {};
+  const n = gl.getProgramParameter(prog, gl.ACTIVE_UNIFORMS);
+  for (let i = 0; i < n; i++) {
+    const info = gl.getActiveUniform(prog, i);
+    uni[info.name.replace("[0]", "")] = gl.getUniformLocation(prog, info.name);
+  }
+  return { prog, uni };
+}
+
+function bindQuad(gl, prog) {
+  const loc = gl.getAttribLocation(prog, "aPos");
+  gl.enableVertexAttribArray(loc);
+  gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+}
+
+function makePipeline(canvas) {
+  const gl = canvas.getContext("webgl", {
+    preserveDrawingBuffer: true,
+    alpha: false,
+    antialias: false,
+    premultipliedAlpha: false,
+  });
+  if (!gl) throw new Error("WebGL을 쓸 수 없어요.");
+  const extHalf = gl.getExtension("OES_texture_half_float");
+  const extBuf = gl.getExtension("EXT_color_buffer_half_float") ||
+    gl.getExtension("WEBGL_color_buffer_float");
+  gl.getExtension("OES_texture_half_float_linear");
+  let useHalf = false;
+  let halfType = null;
+  if (extHalf && extBuf) {
+    halfType = extHalf.HALF_FLOAT_OES;
+    const test = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, test);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 2, 2, 0, gl.RGBA, halfType, null);
+    const fb = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, test, 0);
+    useHalf = gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.deleteFramebuffer(fb);
+    gl.deleteTexture(test);
+  }
+
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+
+  const lens = makeProgram(gl, FS_LENS);
+  const blur = makeProgram(gl, FS_BLUR);
+  const sensor = makeProgram(gl, FS_SENSOR);
+  const demo = makeProgram(gl, FS_DEMO);
+  const isp = makeProgram(gl, FS_ISP);
+
+  const srcTex = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, srcTex);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+  function makeTarget() {
+    const tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    const fbo = gl.createFramebuffer();
+    return { tex, fbo, w: 0, h: 0 };
+  }
+
+  const targets = [makeTarget(), makeTarget()];
+
+  function resizeTarget(t, w, h) {
+    if (t.w === w && t.h === h) return;
+    gl.bindTexture(gl.TEXTURE_2D, t.tex);
+    if (useHalf) {
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, halfType, null);
+    } else {
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    }
+    gl.bindFramebuffer(gl.FRAMEBUFFER, t.fbo);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t.tex, 0);
+    t.w = w;
+    t.h = h;
+  }
+
+  return { gl, lens, blur, sensor, demo, isp, srcTex, targets, useHalf, buf, resizeTarget };
+}
 
 const $ = (id) => document.getElementById(id);
 const video = $("video");
@@ -484,6 +508,7 @@ const state = {
   lumaTick: 0,
   ratioId: "4:3",
   ev: 0,
+  ae: null,
 };
 
 const RATIOS = [
@@ -544,132 +569,16 @@ function cropUv(outW, outH) {
   const outAspect = outW / outH;
   let cw = 1;
   let ch = 1;
-  if (srcAspect > outAspect) {
-    cw = outAspect / srcAspect;
-  } else {
-    ch = srcAspect / outAspect;
-  }
+  if (srcAspect > outAspect) cw = outAspect / srcAspect;
+  else ch = srcAspect / outAspect;
   return { origin: [(1 - cw) / 2, (1 - ch) / 2], size: [cw, ch] };
 }
 
-function compile(gl, type, src) {
-  const sh = gl.createShader(type);
-  gl.shaderSource(sh, src);
-  gl.compileShader(sh);
-  if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
-    throw new Error(gl.getShaderInfoLog(sh) || "shader compile failed");
-  }
-  return sh;
-}
-
-const UNI_NAMES = [
-  "uTex", "uRes", "uCropOrigin", "uCropSize", "uMirror", "uWB", "uSat", "uContrast",
-  "uBrightness", "uShadow", "uHighlight", "uMid", "uVignette", "uSoft", "uSoftMix", "uSharpen",
-  "uHalo", "uShot", "uRead", "uNrLuma", "uNrChroma", "uIsoBoost",
-  "uHdr", "uClarity", "uWarmSplit", "uCornerSoft", "uCA", "uLowLight", "uClip", "uCrush", "uEv", "uSeed",
-];
-
-function makeGL(canvas) {
-  const gl = canvas.getContext("webgl", {
-    preserveDrawingBuffer: true,
-    alpha: false,
-    antialias: false,
-    premultipliedAlpha: false,
-  });
-  if (!gl) throw new Error("WebGL을 쓸 수 없어요.");
-  const prog = gl.createProgram();
-  gl.attachShader(prog, compile(gl, gl.VERTEX_SHADER, VS));
-  gl.attachShader(prog, compile(gl, gl.FRAGMENT_SHADER, FS));
-  gl.linkProgram(prog);
-  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
-    throw new Error(gl.getProgramInfoLog(prog) || "shader link failed");
-  }
-  gl.useProgram(prog);
-  const buf = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
-  const loc = gl.getAttribLocation(prog, "aPos");
-  gl.enableVertexAttribArray(loc);
-  gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-  const tex = gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D, tex);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-  const uni = {};
-  for (const name of UNI_NAMES) uni[name] = gl.getUniformLocation(prog, name);
-  gl.uniform1i(uni.uTex, 0);
-  return { gl, uni, tex };
-}
-
-const renderer = makeGL(glCanvas);
-
-function applyLook(gl, uni, look, width, height, crop, mirror, seed) {
-  gl.uniform2f(uni.uRes, width, height);
-  gl.uniform2f(uni.uCropOrigin, crop.origin[0], crop.origin[1]);
-  gl.uniform2f(uni.uCropSize, crop.size[0], crop.size[1]);
-  gl.uniform1f(uni.uMirror, mirror ? 1 : 0);
-  gl.uniform3f(uni.uWB, look.wb[0], look.wb[1], look.wb[2]);
-  gl.uniform1f(uni.uSat, look.saturation);
-  gl.uniform1f(uni.uContrast, look.contrast);
-  gl.uniform1f(uni.uBrightness, look.brightness);
-  gl.uniform1f(uni.uShadow, look.shadow);
-  gl.uniform1f(uni.uHighlight, look.highlight);
-  gl.uniform1f(uni.uMid, look.mid);
-  gl.uniform1f(uni.uVignette, look.vignette);
-  gl.uniform1f(uni.uSoft, look.soft);
-  gl.uniform1f(uni.uSoftMix, look.softMix);
-  gl.uniform1f(uni.uSharpen, look.sharpen);
-  gl.uniform1f(uni.uHalo, look.halo);
-  gl.uniform1f(uni.uShot, look.shot);
-  gl.uniform1f(uni.uRead, look.read);
-  gl.uniform1f(uni.uNrLuma, look.nrLuma);
-  gl.uniform1f(uni.uNrChroma, look.nrChroma);
-  gl.uniform1f(uni.uIsoBoost, look.isoBoost);
-  gl.uniform1f(uni.uHdr, look.hdr);
-  gl.uniform1f(uni.uClarity, look.clarity);
-  gl.uniform1f(uni.uWarmSplit, look.warmSplit);
-  gl.uniform1f(uni.uCornerSoft, look.cornerSoft);
-  gl.uniform1f(uni.uCA, look.ca);
-  gl.uniform1f(uni.uLowLight, state.lowLight);
-  gl.uniform1f(uni.uClip, look.clip);
-  gl.uniform1f(uni.uCrush, look.crush);
-  gl.uniform1f(uni.uEv, state.ev);
-  gl.uniform1f(uni.uSeed, seed);
-}
-
-function drawFrame(targetW, targetH, seed) {
-  const { gl, uni } = renderer;
-  const look = lookById(state.lookId);
-  const src = state.still || video;
-  if (!state.still && (!video.videoWidth || video.readyState < 2)) return false;
-  if (glCanvas.width !== targetW || glCanvas.height !== targetH) {
-    glCanvas.width = targetW;
-    glCanvas.height = targetH;
-  }
-  gl.viewport(0, 0, targetW, targetH);
-  gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, renderer.tex);
-  try {
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, src);
-  } catch (err) {
-    return false;
-  }
-  const crop = cropUv(targetW, targetH);
-  const mirror = state.facing === "user" && !state.still;
-  applyLook(gl, uni, look, targetW, targetH, crop, mirror, seed);
-  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-  return true;
-}
-
-function workingSize(outW, outH, look) {
-  const r = look.resolve;
-  return {
-    w: Math.max(2, Math.round(outW * r)),
-    h: Math.max(2, Math.round(outH * r)),
-  };
+function evLimits(look) {
+  const isoHead = Math.log2(look.isoMax / 640);
+  const apLoss = 2 * Math.log2(look.aperture / 1.8);
+  const evMax = Math.round(Math.max(0.6, Math.min(2, isoHead - apLoss)) * 10) / 10;
+  return { min: -2, max: evMax, aperture: look.aperture };
 }
 
 function sceneLuma() {
@@ -680,17 +589,207 @@ function sceneLuma() {
   ctx.drawImage(src, 0, 0, 32, 32);
   const d = ctx.getImageData(0, 0, 32, 32).data;
   let s = 0;
-  for (let i = 0; i < d.length; i += 4) s += d[i] * 0.2126 + d[i + 1] * 0.7152 + d[i + 2] * 0.0722;
-  return s / (32 * 32 * 255);
+  for (let i = 0; i < d.length; i += 4) {
+    const r = Math.pow(d[i] / 255, 2.2);
+    const g = Math.pow(d[i + 1] / 255, 2.2);
+    const b = Math.pow(d[i + 2] / 255, 2.2);
+    s += r * 0.2126 + g * 0.7152 + b * 0.0722;
+  }
+  return s / (32 * 32);
 }
 
-function lowLightFromLuma(y) {
-  return Math.max(0, Math.min(1, (0.34 - y) / 0.34));
+function autoExposure(look) {
+  const yLin = Math.max(sceneLuma(), 0.0008);
+  const evBias = Math.pow(2, state.ev);
+  const need = (0.18 / yLin) * evBias;
+  const tRef = 1 / 60;
+  const tMin = 1 / 2000;
+  const apGain = (1.8 / look.aperture) ** 2;
+  let t = tRef * need / Math.max(apGain, 0.05);
+  let iso = look.isoMin;
+  if (t > look.tMax) {
+    iso = look.isoMin * (t / look.tMax);
+    t = look.tMax;
+  }
+  if (t < tMin) t = tMin;
+  iso = Math.min(look.isoMax, Math.max(look.isoMin, iso));
+  const electrons = look.fwc * (t / tRef) * apGain;
+  return { t, iso, yLin, electrons };
 }
 
-function updateLowLight() {
-  state.lowLight = lowLightFromLuma(sceneLuma());
+function updateAE() {
+  const look = lookById(state.lookId);
+  state.ae = autoExposure(look);
+  const mid = 0.18 * Math.pow(2, state.ev);
+  state.lowLight = Math.max(0, Math.min(1, (0.08 - state.ae.yLin) / 0.08));
 }
+
+function workingSize(outW, outH, preview) {
+  let w = Math.max(2, Math.round(outW));
+  let h = Math.max(2, Math.round(outH));
+  if (preview) {
+    const maxPx = 1.15e6;
+    const px = w * h;
+    if (px > maxPx) {
+      const s = Math.sqrt(maxPx / px);
+      w = Math.max(2, Math.round(w * s));
+      h = Math.max(2, Math.round(h * s));
+    }
+  }
+  w -= w % 2;
+  h -= h % 2;
+  return { w, h };
+}
+
+function setUniform(gl, uni, name, fn, ...args) {
+  if (uni[name]) gl[fn](uni[name], ...args);
+}
+
+function useProg(p) {
+  const { gl } = renderer;
+  gl.useProgram(p.prog);
+  gl.bindBuffer(gl.ARRAY_BUFFER, renderer.buf);
+  bindQuad(gl, p.prog);
+  if (p.uni.uLinEnc) gl.uniform1f(p.uni.uLinEnc, renderer.useHalf ? 0 : 1);
+  return p.uni;
+}
+
+function drawTo(target, w, h) {
+  const { gl } = renderer;
+  if (target) {
+    renderer.resizeTarget(target, w, h);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, target.fbo);
+  } else {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    if (glCanvas.width !== w || glCanvas.height !== h) {
+      glCanvas.width = w;
+      glCanvas.height = h;
+    }
+  }
+  gl.viewport(0, 0, w, h);
+}
+
+function bindTex(tex) {
+  const { gl } = renderer;
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, tex);
+}
+
+function drawFrame(targetW, targetH, seed) {
+  const { gl, lens, blur, sensor, demo, isp, srcTex, targets } = renderer;
+  const look = lookById(state.lookId);
+  const src = state.still || video;
+  if (!state.still && (!video.videoWidth || video.readyState < 2)) return false;
+  const crop = cropUv(targetW, targetH);
+  const mirror = state.facing === "user" && !state.still;
+  if (!state.ae) updateAE();
+  const ae = state.ae;
+
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+  bindTex(srcTex);
+  try {
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, src);
+  } catch (err) {
+    return false;
+  }
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+
+  const tanMax = (look.sensorDiagMm * 0.5) / look.focalMm;
+  const diffPx = (2.44 * 0.55 * look.aperture) / look.pitchUm;
+
+  drawTo(targets[0], targetW, targetH);
+  let uni = useProg(lens);
+  bindTex(srcTex);
+  gl.uniform1i(uni.uTex, 0);
+  gl.uniform2f(uni.uRes, targetW, targetH);
+  gl.uniform2f(uni.uCropOrigin, crop.origin[0], crop.origin[1]);
+  gl.uniform2f(uni.uCropSize, crop.size[0], crop.size[1]);
+  gl.uniform1f(uni.uMirror, mirror ? 1 : 0);
+  gl.uniform1f(uni.uCA, look.ca);
+  gl.uniform1f(uni.uTanMax, tanMax);
+  gl.uniform1f(uni.uFlare, look.flare);
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+  drawTo(targets[1], targetW, targetH);
+  uni = useProg(blur);
+  bindTex(targets[0].tex);
+  gl.uniform1i(uni.uTex, 0);
+  gl.uniform2f(uni.uRes, targetW, targetH);
+  gl.uniform2f(uni.uDir, 1, 0);
+  gl.uniform1f(uni.uDiffPx, diffPx);
+  gl.uniform1f(uni.uAberrPx, look.aberrPx);
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+  drawTo(targets[0], targetW, targetH);
+  uni = useProg(blur);
+  bindTex(targets[1].tex);
+  gl.uniform1i(uni.uTex, 0);
+  gl.uniform2f(uni.uRes, targetW, targetH);
+  gl.uniform2f(uni.uDir, 0, 1);
+  gl.uniform1f(uni.uDiffPx, diffPx);
+  gl.uniform1f(uni.uAberrPx, look.aberrPx);
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+  drawTo(targets[1], targetW, targetH);
+  uni = useProg(sensor);
+  bindTex(targets[0].tex);
+  gl.uniform1i(uni.uTex, 0);
+  gl.uniform2f(uni.uRes, targetW, targetH);
+  gl.uniform1f(uni.uFwc, look.fwc);
+  gl.uniform1f(uni.uRead, look.read);
+  gl.uniform1f(uni.uFpn, look.fpn);
+  gl.uniform1f(uni.uIso, ae.iso);
+  gl.uniform1f(uni.uIsoMin, look.isoMin);
+  gl.uniform1f(uni.uElectrons, ae.electrons);
+  gl.uniform1f(uni.uSeed, seed);
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+  drawTo(targets[0], targetW, targetH);
+  uni = useProg(demo);
+  bindTex(targets[1].tex);
+  gl.uniform1i(uni.uTex, 0);
+  gl.uniform2f(uni.uRes, targetW, targetH);
+  gl.uniform3f(uni.uWB, look.wb[0], look.wb[1], look.wb[2]);
+  const m = look.ccm;
+  gl.uniformMatrix3fv(uni.uCCM, false, [m[0], m[3], m[6], m[1], m[4], m[7], m[2], m[5], m[8]]);
+  gl.uniform1f(uni.uSat, look.sat);
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+  drawTo(null, targetW, targetH);
+  uni = useProg(isp);
+  bindTex(targets[0].tex);
+  gl.uniform1i(uni.uTex, 0);
+  gl.uniform2f(uni.uRes, targetW, targetH);
+  gl.uniform1f(uni.uNrLuma, look.nrLuma);
+  gl.uniform1f(uni.uNrChroma, look.nrChroma);
+  gl.uniform1f(uni.uSharpen, look.sharpen);
+  gl.uniform1f(uni.uHalo, look.halo);
+  gl.uniform1f(uni.uContrast, look.contrast);
+  gl.uniform1f(uni.uMid, look.mid);
+  gl.uniform1f(uni.uHdr, look.hdr);
+  gl.uniform1f(uni.uIsoNorm, (ae.iso - look.isoMin) / Math.max(look.isoMax - look.isoMin, 1));
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  return true;
+}
+
+function measurePreview(frames) {
+  const look = lookById(state.lookId);
+  resizeView();
+  const work = workingSize(view.width, view.height, true);
+  updateAE();
+  const gl = renderer.gl;
+  drawFrame(work.w, work.h, 1);
+  if (gl.finish) gl.finish();
+  const n = frames || 45;
+  const t0 = performance.now();
+  for (let i = 0; i < n; i++) drawFrame(work.w, work.h, i + 2);
+  if (gl.finish) gl.finish();
+  const ms = (performance.now() - t0) / n;
+  return { ms, fps: 1000 / ms, width: work.w, height: work.h, frames: n, halfFloat: renderer.useHalf };
+}
+
+
+const renderer = makePipeline(glCanvas);
 
 function layoutFinder() {
   if (!stage) return;
@@ -755,9 +854,8 @@ function loop() {
   if (state.capturing) return;
   resizeView();
   state.lumaTick += 1;
-  if (state.lumaTick % 12 === 1) updateLowLight();
-  const look = lookById(state.lookId);
-  const work = workingSize(view.width, view.height, look);
+  if (state.lumaTick % 12 === 1) updateAE();
+  const work = workingSize(view.width, view.height, true);
   state.seed += 1.0;
   const ok = drawFrame(work.w, work.h, state.seed);
   if (ok) {
@@ -852,12 +950,9 @@ function formatEv(ev) {
 }
 
 function clampEv(value, look) {
+  const lim = evLimits(look);
   const v = Math.round(value * 10) / 10;
-  return Math.min(look.evMax, Math.max(look.evMin, v));
-}
-
-function evLimits(look) {
-  return { min: look.evMin, max: look.evMax, aperture: look.aperture };
+  return Math.min(lim.max, Math.max(lim.min, v));
 }
 
 function showEvHud() {
@@ -873,6 +968,7 @@ function showEvHud() {
 function setEv(value, opts) {
   const look = lookById(state.lookId);
   state.ev = clampEv(value, look);
+  updateAE();
   if (!opts || opts.hud !== false) showEvHud();
   return state.ev;
 }
@@ -940,8 +1036,8 @@ function canvasToBlob(canvas, type, quality) {
 
 async function renderCapture(width, height, seed) {
   const look = lookById(state.lookId);
-  updateLowLight();
-  const work = workingSize(width, height, look);
+  updateAE();
+  const work = workingSize(width, height, false);
   const ok = drawFrame(work.w, work.h, seed);
   if (!ok) throw new Error("사진을 그리지 못했어요.");
   captureCanvas.width = width;
@@ -1081,7 +1177,7 @@ async function useImage(src) {
     state.stream = null;
     video.srcObject = null;
   }
-  updateLowLight();
+  updateAE();
   hideGate();
   return { width: img.width, height: img.height };
 }
@@ -1127,6 +1223,9 @@ window.__TEST__ = {
   isPortrait,
   sceneLuma,
   finderMetrics,
+  autoExposure,
+  updateAE,
+  measurePreview,
 };
 
 wire();

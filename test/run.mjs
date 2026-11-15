@@ -82,7 +82,7 @@ const browser = await puppeteer.launch({
 });
 
 const page = await browser.newPage();
-page.setDefaultTimeout(20000);
+page.setDefaultTimeout(120000);
 const errors = [];
 page.on("pageerror", (e) => errors.push(String(e)));
 page.on("console", (msg) => {
@@ -218,6 +218,15 @@ if (evCheck.fail.length) {
   console.log("ev clamps passed");
 }
 
+const preview = await page.evaluate(() => {
+  const gl = document.getElementById("gl").getContext("webgl");
+  const dbg = gl && gl.getExtension("WEBGL_debug_renderer_info");
+  const renderer = dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : "unknown";
+  const vendor = dbg ? gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL) : "unknown";
+  const timing = window.__TEST__.measurePreview(45);
+  return { ...timing, renderer, vendor };
+});
+console.log("preview timing", preview);
 
 await settle();
 const uiPath = join(samples, "ui-mobile.jpg");

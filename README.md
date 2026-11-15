@@ -42,6 +42,21 @@ python3 -m http.server 8080
 
 브라우저에서 `http://localhost:8080`을 엽니다.
 
+## 시뮬레이션은 이렇게 돌아갑니다
+
+노이즈나 흐림을 위에 덧그리지 않고, 그 시절 아이폰의 렌즈·센서·ISP를 짧은 파이프라인으로 흉내 냅니다.
+
+1. 화면의 sRGB를 대략 선형 빛으로 되돌립니다.
+2. 그 기종의 초점거리와 조리개(f/2.2 또는 f/1.8)로 렌즈를 재현합니다. 가운데는 비교적 선명하고 가장자리로 갈수록 회절과 수차가 커지며, 옆으로 색이 살짝 번지고, 자연스러운 비네팅과(예전 렌즈는) 약한 플레어가 생깁니다.
+3. 실제 픽셀 피치와 그 세대의 풀웰·리드 노이즈 추정값을 써서 Bayer RGGB 센서를 샘플합니다. 광전자는 샷 노이즈(포아송, 전자가 많으면 가우시안 근사)와 리드 노이즈를 거친 뒤 풀웰에서 잘리고, ISO 게인을 곱한 다음 10비트 ADC로 양자화됩니다. 하이라이트가 날아가는 지점이 여기서 결정됩니다.
+4. 그 시절 ISP를 따릅니다. 간단한 에지 인식 디모자이크로 색 노이즈와 가는 디테일의 거짓 색이 생기고, 화이트 밸런스와 컬러 매트릭스가 기종별 색감을 만듭니다. 예전 기종은 노이즈 감소와 샤픈 할로가 좀 더 세고, XS만 Smart HDR처럼 국소 톤을 살짝 올립니다. 마지막에 톤 커브와 감마를 적용하고, JPEG 압축은 저장할 때만 들어갑니다.
+
+미리보기는 같은 체인을 화면 해상도로, 저장은 그 기종의 원래 해상도로 돌립니다.
+
+## How the simulation works
+
+The look is not a painted grain or blur formula. Light is linearized, then passed through that phone's lens (diffraction, corner aberrations, lateral CA, cos⁴-like vignetting, mild flare on older glass), a Bayer RGGB sensor (shot and read noise, full-well clip, ISO gain, 10-bit ADC), and an era-style ISP (edge-aware demosaic, white balance, color matrix, NR, sharpening, tone/gamma). JPEG is applied only when a photo is saved. Grain, smear, and color noise come out of this chain.
+
 ## 샘플 사진 출처
 
 테스트와 샘플에 쓴 거리 사진은 James Ó Nuanáin의 *Inverness Street Market from Camden High Street 2020*입니다. 라이선스는 [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0/).
