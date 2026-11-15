@@ -27,7 +27,8 @@ const LOOKS = [
     isoMin: 32, isoMax: 1600, tMax: 1 / 17,
     aberrPx: 3.6, flare: 0.22, vig: 0.42, ca: 4.0, caView: 1.1,
     nrLuma: 0.28, nrChroma: 0.9, nrRadius: 1.55,
-    sharpen: 0.28, halo: 0.12,
+    smearPx: 9.0, smearAmt: 0.72, smearView: 2.3, demoSoft: 0.8,
+    sharpen: 0.30, halo: 0.12,
     wb: [1, 1, 1],
     ccm: [1, 0, 0, 0, 1, 0, 0, 0, 1],
     sat: 1, contrast: 1, mid: 0,
@@ -42,7 +43,8 @@ const LOOKS = [
     isoMin: 25, isoMax: 3200, tMax: 1 / 17,
     aberrPx: 2.3, flare: 0.10, vig: 0.30, ca: 2.5, caView: 0.6,
     nrLuma: 0.3, nrChroma: 0.82, nrRadius: 1.25,
-    sharpen: 0.325, halo: 0.1398,
+    smearPx: 5.8, smearAmt: 0.48, smearView: 1.6, demoSoft: 0.4,
+    sharpen: 0.36, halo: 0.1398,
     wb: [1, 1, 1],
     ccm: [1, 0, 0, 0, 1, 0, 0, 0, 1],
     sat: 1, contrast: 1, mid: 0,
@@ -57,7 +59,8 @@ const LOOKS = [
     isoMin: 25, isoMax: 3200, tMax: 1 / 17,
     aberrPx: 2.5, flare: 0.14, vig: 0.36, ca: 2.8, caView: 0.7,
     nrLuma: 0.34, nrChroma: 0.98, nrRadius: 1.45,
-    sharpen: 0.3575, halo: 0.1518,
+    smearPx: 7.5, smearAmt: 0.62, smearView: 2.0, demoSoft: 0.5,
+    sharpen: 0.38, halo: 0.1518,
     wb: [1, 1, 1],
     ccm: [1, 0, 0, 0, 1, 0, 0, 0, 1],
     sat: 1, contrast: 1, mid: 0,
@@ -72,7 +75,8 @@ const LOOKS = [
     isoMin: 20, isoMax: 3200, tMax: 1 / 4,
     aberrPx: 1.5, flare: 0.07, vig: 0.20, ca: 1.6, caView: 0.35,
     nrLuma: 0.25, nrChroma: 0.66, nrRadius: 1.1,
-    sharpen: 0.325, halo: 0.1463,
+    smearPx: 5.0, smearAmt: 0.42, smearView: 1.45, demoSoft: 0.2,
+    sharpen: 0.36, halo: 0.1463,
     wb: [1, 1, 1],
     ccm: [1, 0, 0, 0, 1, 0, 0, 0, 1],
     sat: 1, contrast: 1, mid: 0,
@@ -87,7 +91,8 @@ const LOOKS = [
     isoMin: 22, isoMax: 2500, tMax: 1 / 4,
     aberrPx: 1.2, flare: 0.05, vig: 0.16, ca: 1.2, caView: 0.25,
     nrLuma: 0.12, nrChroma: 0.4, nrRadius: 1,
-    sharpen: 0.50, halo: 0.22,
+    smearPx: 5.5, smearAmt: 0.40, smearView: 1.35, demoSoft: 0.1,
+    sharpen: 0.36, halo: 0.18,
     wb: [1, 1, 1],
     ccm: [1, 0, 0, 0, 1, 0, 0, 0, 1],
     sat: 1, contrast: 1, mid: 0,
@@ -102,7 +107,8 @@ const LOOKS = [
     isoMin: 16, isoMax: 3200, tMax: 1 / 4,
     aberrPx: 0.7, flare: 0.03, vig: 0.08, ca: 0.8, caView: 0.12,
     nrLuma: 0.1, nrChroma: 0.28, nrRadius: 0.85,
-    sharpen: 0.29, halo: 0.08,
+    smearPx: 2.8, smearAmt: 0.20, smearView: 0.80, demoSoft: 0.0,
+    sharpen: 0.32, halo: 0.08,
     wb: [1, 1, 1],
     ccm: [1, 0, 0, 0, 1, 0, 0, 0, 1],
     sat: 1, contrast: 1, mid: 0,
@@ -167,6 +173,29 @@ vec3 gauss3(vec3 p) {
 }
 `;
 
+// Downsample the source once into the output grid with a 5-tap box so
+// preview pixels do not alias modern high frequencies. Lens/flare then
+// sample this 1:1 texture instead of the full-res source many times.
+const FS_PRE = COMMON + `
+uniform vec2 uCropOrigin;
+uniform vec2 uCropSize;
+uniform float uMirror;
+uniform vec2 uSrcSize;
+
+void main() {
+  vec2 t0 = uCropOrigin + vUv * uCropSize;
+  t0.x = mix(t0.x, uCropOrigin.x + uCropSize.x - (t0.x - uCropOrigin.x), uMirror);
+  vec2 foot = 0.5 * uCropSize / uRes;
+  vec2 f = foot * 0.8;
+  vec3 s = texture2D(uTex, clamp(t0, vec2(0.0), vec2(1.0))).rgb;
+  s += texture2D(uTex, clamp(t0 + vec2(f.x, 0.0), vec2(0.0), vec2(1.0))).rgb;
+  s += texture2D(uTex, clamp(t0 - vec2(f.x, 0.0), vec2(0.0), vec2(1.0))).rgb;
+  s += texture2D(uTex, clamp(t0 + vec2(0.0, f.y), vec2(0.0), vec2(1.0))).rgb;
+  s += texture2D(uTex, clamp(t0 - vec2(0.0, f.y), vec2(0.0), vec2(1.0))).rgb;
+  gl_FragColor = vec4(s * 0.2, 1.0);
+}
+`;
+
 const FS_LENS = COMMON + `
 uniform vec2 uCropOrigin;
 uniform vec2 uCropSize;
@@ -181,6 +210,7 @@ uniform float uVigAmt;
 vec3 srcLin(vec2 uv) {
   vec2 t = uCropOrigin + uv * uCropSize;
   t.x = mix(t.x, uCropOrigin.x + uCropSize.x - (t.x - uCropOrigin.x), uMirror);
+  t = clamp(t, vec2(0.0), vec2(1.0));
   return toLinear(texture2D(uTex, t).rgb);
 }
 
@@ -299,6 +329,7 @@ const FS_DEMO = COMMON + `
 uniform vec3 uWB;
 uniform mat3 uCCM;
 uniform float uSat;
+uniform float uDemoSoft;
 
 float rawAt(vec2 uv) {
   return texture2D(uTex, uv).r;
@@ -323,11 +354,13 @@ vec3 demosaic(vec2 uv) {
   float dh = abs(l - r);
   float dv = abs(u - d);
   float gEdge = dh < dv ? gh : gv;
+  float gBi = 0.25 * (l + r + u + d);
+  float g = mix(gEdge, gBi, clamp(uDemoSoft, 0.0, 1.0));
   vec3 rgb;
   if (mx < 0.5 && my < 0.5) {
-    rgb = vec3(c, gEdge, 0.25 * (ul + ur + dl + dr));
+    rgb = vec3(c, g, 0.25 * (ul + ur + dl + dr));
   } else if (mx > 0.5 && my > 0.5) {
-    rgb = vec3(0.25 * (ul + ur + dl + dr), gEdge, c);
+    rgb = vec3(0.25 * (ul + ur + dl + dr), g, c);
   } else if (mx > 0.5 && my < 0.5) {
     rgb = vec3(0.5 * (l + r), c, 0.5 * (u + d));
   } else {
@@ -359,6 +392,8 @@ uniform float uShoulderStart;
 uniform float uHdr;
 uniform float uLocalTone;
 uniform float uIsoNorm;
+uniform float uSmearPx;
+uniform float uSmearAmt;
 uniform sampler2D uLUT;
 uniform float uLutRow;
 uniform vec2 uLutSize;
@@ -398,6 +433,24 @@ void main() {
   float y = mix(y0, yb, clamp(uNrLuma * isoK * hdrShadow, 0.0, 0.75));
   vec3 ch = mix(c0 - vec3(y0), nrBlur - vec3(yb), clamp(uNrChroma * isoK * shadowK, 0.0, 0.95));
   vec3 c = max(vec3(y) + ch, 0.0);
+
+  // Edge-aware texture smear: flatten foliage/hair/fabric, keep strong
+  // edges so 100% crops stay crisp-ish while view-size fine detail
+  // loses information the way the era JPEGs do.
+  if (uSmearAmt > 0.001 && uSmearPx > 0.35) {
+    float sp = uSmearPx;
+    vec3 p1 = decLin(texture2D(uTex, vUv + vec2(sp, 0.0) * px).rgb);
+    vec3 p2 = decLin(texture2D(uTex, vUv - vec2(sp, 0.0) * px).rgb);
+    vec3 p3 = decLin(texture2D(uTex, vUv + vec2(0.0, sp) * px).rgb);
+    vec3 p4 = decLin(texture2D(uTex, vUv - vec2(0.0, sp) * px).rgb);
+    vec3 p5 = decLin(texture2D(uTex, vUv + vec2(sp * 2.0, 0.0) * px).rgb);
+    vec3 p6 = decLin(texture2D(uTex, vUv - vec2(sp * 2.0, 0.0) * px).rgb);
+    vec3 p7 = decLin(texture2D(uTex, vUv + vec2(0.0, sp * 2.0) * px).rgb);
+    vec3 p8 = decLin(texture2D(uTex, vUv - vec2(0.0, sp * 2.0) * px).rgb);
+    vec3 smear = c0 * 0.2 + (p1 + p2 + p3 + p4) * 0.125 + (p5 + p6 + p7 + p8) * 0.075;
+    float edgeW = smoothstep(0.018, 0.09, abs(lum(c0) - lum(smear)));
+    c = mix(c, max(smear, 0.0), clamp(uSmearAmt, 0.0, 0.95) * (1.0 - edgeW));
+  }
 
   if (uLocalTone > 0.0) {
     float yNow = lum(c);
@@ -508,6 +561,7 @@ function makePipeline(canvas) {
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
 
   const lens = makeProgram(gl, FS_LENS);
+  const pre = makeProgram(gl, FS_PRE);
   const blur = makeProgram(gl, FS_BLUR);
   const sensor = makeProgram(gl, FS_SENSOR);
   const demo = makeProgram(gl, FS_DEMO);
@@ -581,7 +635,7 @@ function makePipeline(canvas) {
     return lutUploaded;
   }
 
-  return { gl, lens, blur, sensor, demo, isp, srcTex, targets, useHalf, buf, resizeTarget, lutTex, uploadLut, get lutUploaded() { return lutUploaded; }, get lutSize() { return lutSize; } };
+  return { gl, lens, pre, blur, sensor, demo, isp, srcTex, targets, useHalf, buf, resizeTarget, lutTex, uploadLut, get lutUploaded() { return lutUploaded; }, get lutSize() { return lutSize; } };
 }
 
 const $ = (id) => document.getElementById(id);
@@ -826,7 +880,7 @@ function bindTex(tex) {
 }
 
 function drawFrame(targetW, targetH, seed) {
-  const { gl, lens, blur, sensor, demo, isp, srcTex, targets } = renderer;
+  const { gl, lens, pre, blur, sensor, demo, isp, srcTex, targets } = renderer;
   const look = lookById(state.lookId);
   const src = state.still || video;
   if (!state.still && (!video.videoWidth || video.readyState < 2)) return false;
@@ -849,15 +903,52 @@ function drawFrame(targetW, targetH, seed) {
   const aberrPx = look.aberrPx * frame.scale;
   const caView = (targetW < look.width * 0.5) ? (look.caView || 0) : 0;
   const caPx = look.ca * frame.scale + caView;
+  const srcW = state.still ? src.width : (video.videoWidth || targetW);
+  const srcH = state.still ? src.height : (video.videoHeight || targetH);
+  // Bayer at the model's native pixel pitch only. At preview size a CFA
+  // would make 5-native-px zippers. The era softness is applied in
+  // scene frequencies via smearPx * scale so foliage mush shows at
+  // view size too.
+  const useBayer = targetW >= look.width * 0.45;
+  const preview = targetW < look.width * 0.5;
+  const smearPx = preview
+    ? Math.max((look.smearPx || 0) * frame.scale, look.smearView || 0)
+    : (look.smearPx || 0) * frame.scale;
+  const srcSpan = Math.max(
+    (srcW * crop.size[0]) / targetW,
+    (srcH * crop.size[1]) / targetH
+  );
+  const doPre = srcSpan > 1.5;
+
+  let uni;
+  if (doPre) {
+    // Area-filter into the output grid, then lens samples that 1:1.
+    drawTo(targets[1], targetW, targetH);
+    uni = useProg(pre);
+    bindTex(srcTex);
+    gl.uniform1i(uni.uTex, 0);
+    gl.uniform2f(uni.uRes, targetW, targetH);
+    gl.uniform2f(uni.uCropOrigin, crop.origin[0], crop.origin[1]);
+    gl.uniform2f(uni.uCropSize, crop.size[0], crop.size[1]);
+    gl.uniform1f(uni.uMirror, mirror ? 1 : 0);
+    gl.uniform2f(uni.uSrcSize, srcW, srcH);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  }
 
   drawTo(targets[0], targetW, targetH);
-  let uni = useProg(lens);
-  bindTex(srcTex);
+  uni = useProg(lens);
+  bindTex(doPre ? targets[1].tex : srcTex);
   gl.uniform1i(uni.uTex, 0);
   gl.uniform2f(uni.uRes, targetW, targetH);
-  gl.uniform2f(uni.uCropOrigin, crop.origin[0], crop.origin[1]);
-  gl.uniform2f(uni.uCropSize, crop.size[0], crop.size[1]);
-  gl.uniform1f(uni.uMirror, mirror ? 1 : 0);
+  if (doPre) {
+    gl.uniform2f(uni.uCropOrigin, 0, 0);
+    gl.uniform2f(uni.uCropSize, 1, 1);
+    gl.uniform1f(uni.uMirror, 0);
+  } else {
+    gl.uniform2f(uni.uCropOrigin, crop.origin[0], crop.origin[1]);
+    gl.uniform2f(uni.uCropSize, crop.size[0], crop.size[1]);
+    gl.uniform1f(uni.uMirror, mirror ? 1 : 0);
+  }
   gl.uniform1f(uni.uCAPx, caPx);
   gl.uniform2f(uni.uHalfMm, frame.halfWmm, frame.halfHmm);
   gl.uniform1f(uni.uFocalMm, look.focalMm);
@@ -890,30 +981,33 @@ function drawFrame(targetW, targetH, seed) {
   gl.uniform1f(uni.uHalfDiagMm, frame.halfDiagMm);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
-  drawTo(targets[1], targetW, targetH);
-  uni = useProg(sensor);
-  bindTex(targets[0].tex);
-  gl.uniform1i(uni.uTex, 0);
-  gl.uniform2f(uni.uRes, targetW, targetH);
-  gl.uniform1f(uni.uFwc, look.fwc);
-  gl.uniform1f(uni.uRead, look.read);
-  gl.uniform1f(uni.uFpn, look.fpn);
-  gl.uniform1f(uni.uIso, ae.iso);
-  gl.uniform1f(uni.uIsoMin, look.isoMin);
-  gl.uniform1f(uni.uElectrons, ae.electrons);
-  gl.uniform1f(uni.uSeed, seed);
-  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  if (useBayer) {
+    drawTo(targets[1], targetW, targetH);
+    uni = useProg(sensor);
+    bindTex(targets[0].tex);
+    gl.uniform1i(uni.uTex, 0);
+    gl.uniform2f(uni.uRes, targetW, targetH);
+    gl.uniform1f(uni.uFwc, look.fwc);
+    gl.uniform1f(uni.uRead, look.read);
+    gl.uniform1f(uni.uFpn, look.fpn);
+    gl.uniform1f(uni.uIso, ae.iso);
+    gl.uniform1f(uni.uIsoMin, look.isoMin);
+    gl.uniform1f(uni.uElectrons, ae.electrons);
+    gl.uniform1f(uni.uSeed, seed);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
-  drawTo(targets[0], targetW, targetH);
-  uni = useProg(demo);
-  bindTex(targets[1].tex);
-  gl.uniform1i(uni.uTex, 0);
-  gl.uniform2f(uni.uRes, targetW, targetH);
-  gl.uniform3f(uni.uWB, look.wb[0], look.wb[1], look.wb[2]);
-  const m = look.ccm;
-  gl.uniformMatrix3fv(uni.uCCM, false, [m[0], m[3], m[6], m[1], m[4], m[7], m[2], m[5], m[8]]);
-  gl.uniform1f(uni.uSat, look.sat);
-  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    drawTo(targets[0], targetW, targetH);
+    uni = useProg(demo);
+    bindTex(targets[1].tex);
+    gl.uniform1i(uni.uTex, 0);
+    gl.uniform2f(uni.uRes, targetW, targetH);
+    gl.uniform3f(uni.uWB, look.wb[0], look.wb[1], look.wb[2]);
+    const m = look.ccm;
+    gl.uniformMatrix3fv(uni.uCCM, false, [m[0], m[3], m[6], m[1], m[4], m[7], m[2], m[5], m[8]]);
+    gl.uniform1f(uni.uSat, look.sat);
+    gl.uniform1f(uni.uDemoSoft, look.demoSoft || 0);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  }
 
   drawTo(null, targetW, targetH);
   uni = useProg(isp);
@@ -928,6 +1022,8 @@ function drawFrame(targetW, targetH, seed) {
   gl.uniform1f(uni.uNrLuma, look.nrLuma);
   gl.uniform1f(uni.uNrChroma, look.nrChroma);
   gl.uniform1f(uni.uNrRadius, look.nrRadius == null ? 1 : look.nrRadius);
+  gl.uniform1f(uni.uSmearPx, smearPx);
+  gl.uniform1f(uni.uSmearAmt, look.smearAmt || 0);
   gl.uniform1f(uni.uSharpen, look.sharpen);
   gl.uniform1f(uni.uHalo, look.halo);
   gl.uniform1f(uni.uContrast, look.contrast);
