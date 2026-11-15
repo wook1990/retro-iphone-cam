@@ -27,3 +27,5 @@ calib/__pycache__/
 calib/out/preview/
 samples/compare-real.jpg
 samples/compare-*.jpg
+samples/signature-scenes.jpg
+samples/scene-*.jpg

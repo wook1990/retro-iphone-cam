@@ -61,3 +61,11 @@ Root causes, in order:
 AE at ev=0, the lens-radius/crop fix, per-model NR/sharpen/local-tone, and Bayer geometry are unchanged. A global contrast slider was not added.
 
 Still-life midtone span and RMS local contrast now match the real JPEGs closely; black/white points are within about 0.02–0.05. Chart MTF50 is higher than v7 but still short of the punchiest real chart edges on 5s/SE/6s (era smear remains). See the v8 before/after table in the ship log.
+
+## v9 per-model signatures
+
+v8's identity-luma LUT, plus across-the-board cuts to vignette, flare, and PSF, made the six looks almost identical at phone size (Camden mean pairwise ΔE 4.3, min 2.3). v9 keeps v8's true blacks (curve endpoints at 0 and 1; flare only veils darker pixels next to hot sources, not a global wash).
+
+Each model now has a 1D luma curve from histogram matching 13→era on aligned central regions, leaned slightly toward the remembered signature, plus a chroma/WB grade grounded in the real JPEGs' Lab/sat. Residual vignette and flare amounts are spread further by era; corner aberration uses the full LOOKS value again; a small view-size CA floor keeps the physical fringe readable after downsample. 8's sharpening halo is slightly stronger.
+
+Phone-size same-source pairwise ΔE on the Camden still: mean 11.5, min 6.0. Backlit / indoor / dusk scenes: mean 11.3 / 12.7 / 14.1, min 6.5 / 6.9 / 7.3. Models do not converge. See `signatures.py` and `out/tone-curves.json`.

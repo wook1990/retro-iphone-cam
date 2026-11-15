@@ -163,3 +163,12 @@ User-Agent used for the API crawl: `retro-iphone-cam-calib/1.0`.
 | Piec kaflowy brązowy.jpg | 400 | CC BY-SA 4.0 | Pczempik | [page](https://commons.wikimedia.org/wiki/File:Piec_kaflowy_br%C4%85zowy.jpg) |
 | Canon V-20 MSX computer (2).jpg | 200 | CC BY 2.0 | Karl Baron | [page](https://commons.wikimedia.org/wiki/File:Canon_V-20_MSX_computer_(2).jpg) |
 
+## Signature-scene sources (phone-size side-by-side)
+
+These freely licensed photographs are used only as clean modern inputs for a phone-size, six-model comparison (daylight backlight, indoor warm light, dusk). They are not part of the LUT/noise fit and the originals are not in the public repo (`calib/raw/` is gitignored). The derived contact sheet is also gitignored; credit is kept here so the comparison can be remade.
+
+| Scene | File | License | Author | Page |
+|---|---|---|---|---|
+| backlit | Contre-jour photograph of sunset with the Mekong banks seen from the bridge between Don Det and Don Khon Laos HDR.jpg | CC BY-SA 4.0 | Basile Morin | [page](https://commons.wikimedia.org/wiki/File:Contre-jour_photograph_of_sunset_with_the_Mekong_banks_seen_from_the_bridge_between_Don_Det_and_Don_Khon_Laos_HDR.jpg) |
+| indoor | French Coffee Shop, Dieppe 2026-05-11.jpg | CC0 | Andy Li | [page](https://commons.wikimedia.org/wiki/File:French_Coffee_Shop,_Dieppe_2026-05-11.jpg) |
+| dusk | Lincoln Center during pride at dusk (93381p).jpg | CC BY-SA 4.0 | Rhododendrites | [page](https://commons.wikimedia.org/wiki/File:Lincoln_Center_during_pride_at_dusk_(93381p).jpg) |

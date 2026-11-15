@@ -240,24 +240,30 @@ def smooth3d(lut, passes=1):
 
 
 
-def repair_lut_tone(lut, ident):
-    """Keep fitted chroma, restore identity luma.
+def repair_lut_tone(lut, ident, curve=None):
+    """Keep fitted chroma; apply a 1D luma curve (identity if curve is None).
 
     Same-scene pairs still have residual misalignment, so a 3D splat
-    regresses toward mid-gray and flattens midtone slope even after the
-    endpoints are forced to 0 and 1. Polluted near-black / near-white
-    bins (and bins whose luma is far from the source) fall back to
-    identity; every other bin keeps its chromatic shift and is scaled
-    so output luma equals input luma. The gray ramp is then identity
-    and mid-slope stays 1.
+    regresses toward mid-gray and flattens midtone slope. Polluted
+    near-black / near-white bins (and bins whose luma is far from the
+    source) fall back to identity chroma. Every bin is then scaled so
+    output luma follows `curve`, a 1-D array sampled on a uniform 0–1
+    grid. The curve should already be monotonic with endpoints at 0
+    and 1 so blacks stay true and there is no milky fog.
     """
     src_y = luma(ident)
     dst_y = luma(lut)
     bad = (src_y > 0.88) | (src_y < 0.08) | (np.abs(dst_y - src_y) > 0.25) | (dst_y < 0.02)
     work = np.where(bad[..., None], ident, lut)
     work_y = luma(work)
-    scaled = np.clip(work * (src_y / np.maximum(work_y, 1e-4))[..., None], 0, 1)
-    out = np.where((work_y < 0.02)[..., None], ident, scaled)
+    if curve is None:
+        target = src_y
+    else:
+        xs = np.linspace(0.0, 1.0, len(curve))
+        target = np.interp(src_y, xs, np.asarray(curve, dtype=np.float64))
+    scaled = np.clip(work * (target / np.maximum(work_y, 1e-4))[..., None], 0, 1)
+    id_scaled = np.clip(ident * (target / np.maximum(src_y, 1e-4))[..., None], 0, 1)
+    out = np.where((work_y < 0.02)[..., None], id_scaled, scaled)
     out[0, 0, 0] = 0
     out[N - 1, N - 1, N - 1] = 1
     return np.clip(out, 0, 1)

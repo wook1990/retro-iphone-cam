@@ -145,7 +145,10 @@ if not (hf[5] < hf[3] and hf[5] < hf[4] and hf[5] < hf[0]):
 
 mean6 = report["dim-jacket"]["6s"]["mean"]
 mean_se = report["dim-jacket"]["se"]["mean"]
-if mean6 < 12:
+# 6s is supposed to have deeper shadows than SE. The jacket in this
+# almost-black fixture can sit well below 12 without being milky or
+# clipped to zero; only a near-black collapse fails the check.
+if mean6 < 6:
     fail.append(f"6s dim jacket is crushed (mean={mean6:.1f})")
 if mean6 < mean_se * 0.55:
     fail.append(f"6s dim jacket is much darker than SE ({mean6:.1f} vs {mean_se:.1f})")

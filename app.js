@@ -25,7 +25,7 @@ const LOOKS = [
     aperture: 2.2, focalMm: 4.12, sensorDiagMm: 6.0, pitchUm: 1.5,
     fwc: 6500, read: 3.8, fpn: 0.6,
     isoMin: 32, isoMax: 1600, tMax: 1 / 17,
-    aberrPx: 3.6, flare: 0.032, vig: 0.22, ca: 4.0,
+    aberrPx: 3.6, flare: 0.22, vig: 0.42, ca: 4.0, caView: 1.1,
     nrLuma: 0.28, nrChroma: 0.9, nrRadius: 1.55,
     sharpen: 0.28, halo: 0.12,
     wb: [1, 1, 1],
@@ -40,7 +40,7 @@ const LOOKS = [
     aperture: 2.2, focalMm: 4.15, sensorDiagMm: 6.0, pitchUm: 1.22,
     fwc: 4200, read: 2.3, fpn: 0.4,
     isoMin: 25, isoMax: 3200, tMax: 1 / 17,
-    aberrPx: 2.3, flare: 0.02, vig: 0.18, ca: 2.5,
+    aberrPx: 2.3, flare: 0.10, vig: 0.30, ca: 2.5, caView: 0.6,
     nrLuma: 0.3, nrChroma: 0.82, nrRadius: 1.25,
     sharpen: 0.325, halo: 0.1398,
     wb: [1, 1, 1],
@@ -55,7 +55,7 @@ const LOOKS = [
     aperture: 2.2, focalMm: 4.15, sensorDiagMm: 6.0, pitchUm: 1.22,
     fwc: 4200, read: 3.12, fpn: 0.45,
     isoMin: 25, isoMax: 3200, tMax: 1 / 17,
-    aberrPx: 2.5, flare: 0.024, vig: 0.18, ca: 2.8,
+    aberrPx: 2.5, flare: 0.14, vig: 0.36, ca: 2.8, caView: 0.7,
     nrLuma: 0.34, nrChroma: 0.98, nrRadius: 1.45,
     sharpen: 0.3575, halo: 0.1518,
     wb: [1, 1, 1],
@@ -70,7 +70,7 @@ const LOOKS = [
     aperture: 1.8, focalMm: 3.99, sensorDiagMm: 6.0, pitchUm: 1.22,
     fwc: 4800, read: 1.5, fpn: 0.3,
     isoMin: 20, isoMax: 3200, tMax: 1 / 4,
-    aberrPx: 1.5, flare: 0.012, vig: 0.14, ca: 1.6,
+    aberrPx: 1.5, flare: 0.07, vig: 0.20, ca: 1.6, caView: 0.35,
     nrLuma: 0.25, nrChroma: 0.66, nrRadius: 1.1,
     sharpen: 0.325, halo: 0.1463,
     wb: [1, 1, 1],
@@ -85,9 +85,9 @@ const LOOKS = [
     aperture: 1.8, focalMm: 3.99, sensorDiagMm: 6.0, pitchUm: 1.22,
     fwc: 5000, read: 1.275, fpn: 0.25,
     isoMin: 22, isoMax: 2500, tMax: 1 / 4,
-    aberrPx: 1.2, flare: 0.01, vig: 0.12, ca: 1.2,
+    aberrPx: 1.2, flare: 0.05, vig: 0.16, ca: 1.2, caView: 0.25,
     nrLuma: 0.12, nrChroma: 0.4, nrRadius: 1,
-    sharpen: 0.4718, halo: 0.1787,
+    sharpen: 0.50, halo: 0.22,
     wb: [1, 1, 1],
     ccm: [1, 0, 0, 0, 1, 0, 0, 0, 1],
     sat: 1, contrast: 1, mid: 0,
@@ -100,7 +100,7 @@ const LOOKS = [
     aperture: 1.8, focalMm: 4.25, sensorDiagMm: 7.06, pitchUm: 1.4,
     fwc: 8000, read: 1.125, fpn: 0.18,
     isoMin: 16, isoMax: 3200, tMax: 1 / 4,
-    aberrPx: 0.7, flare: 0.006, vig: 0.10, ca: 0.8,
+    aberrPx: 0.7, flare: 0.03, vig: 0.08, ca: 0.8, caView: 0.12,
     nrLuma: 0.1, nrChroma: 0.28, nrRadius: 0.85,
     sharpen: 0.29, halo: 0.08,
     wb: [1, 1, 1],
@@ -210,16 +210,24 @@ void main() {
   float vig = mix(1.0, vigNat, clamp(uVigAmt, 0.0, 1.0));
   c *= vig;
   if (uFlare > 0.001) {
-    // Veiling flare is a wide, isotropic haze from bright areas — not a
-    // radial zoom-blur sample that would stretch the image.
-    vec2 o = vec2(0.04 * uRes.y, 0.04 * uRes.y) / uRes;
+    // Veiling flare around bright sources (sun, lamps, backlight), not
+    // a wash on already-bright flats — that was the v7 global haze.
+    vec2 o1 = vec2(0.04 * uRes.y, 0.04 * uRes.y) / uRes;
+    vec2 o2 = vec2(0.09 * uRes.y, 0.09 * uRes.y) / uRes;
     vec3 h = vec3(0.0);
-    h += srcLin(uv + vec2(o.x, 0.0));
-    h += srcLin(uv - vec2(o.x, 0.0));
-    h += srcLin(uv + vec2(0.0, o.y));
-    h += srcLin(uv - vec2(0.0, o.y));
-    h *= 0.25;
-    c += max(h - vec3(0.55), 0.0) * uFlare;
+    h += srcLin(uv + vec2(o1.x, 0.0));
+    h += srcLin(uv - vec2(o1.x, 0.0));
+    h += srcLin(uv + vec2(0.0, o1.y));
+    h += srcLin(uv - vec2(0.0, o1.y));
+    h += srcLin(uv + vec2(o2.x, 0.0)) * 0.5;
+    h += srcLin(uv - vec2(o2.x, 0.0)) * 0.5;
+    h += srcLin(uv + vec2(0.0, o2.y)) * 0.5;
+    h += srcLin(uv - vec2(0.0, o2.y)) * 0.5;
+    h *= 1.0 / 6.0;
+    float hY = lum(h);
+    float cY = lum(c);
+    float gate = smoothstep(0.55, 0.85, hY) * smoothstep(0.0, 0.25, hY - cY);
+    c += max(h - c, 0.0) * uFlare * gate;
   }
   gl_FragColor = vec4(encLin(max(c, 0.0)), 1.0);
 }
@@ -238,7 +246,7 @@ void main() {
   float rNorm = length(mm) / max(uHalfDiagMm, 0.0001);
   // 0.21 × Airy diameter is the Gaussian σ of the diffraction core.
   // 0.45 was ~2× too wide and pinned native MTF50 around 0.18 cy/px.
-  float sigma = uDiffPx * 0.21 + uAberrPx * 0.5 * rNorm * rNorm;
+  float sigma = uDiffPx * 0.21 + uAberrPx * rNorm * rNorm;
   vec2 step = uDir / uRes;
   vec3 acc = decLin(texture2D(uTex, uv).rgb);
   float wsum = 1.0;
@@ -839,7 +847,8 @@ function drawFrame(targetW, targetH, seed) {
   const frame = lensFrame(look, targetW, targetH);
   const diffPx = ((2.44 * 0.55 * look.aperture) / look.pitchUm) * frame.scale;
   const aberrPx = look.aberrPx * frame.scale;
-  const caPx = look.ca * frame.scale;
+  const caView = (targetW < look.width * 0.5) ? (look.caView || 0) : 0;
+  const caPx = look.ca * frame.scale + caView;
 
   drawTo(targets[0], targetW, targetH);
   let uni = useProg(lens);
