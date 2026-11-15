@@ -123,8 +123,11 @@ for lid in LOOKS:
     w = edge_width(im)
     report["day-sign"][lid] = {"width": float(w)}
     print(f"day-sign {lid}: edge-width={w:.2f}px")
-if report["day-sign"]["5s"]["width"] < report["day-sign"]["8"]["width"] * 1.05:
-    fail.append("5s should be softer than 8 on a high-contrast edge")
+# The sign bar is well inside the frame. After a rectilinear lens, era
+# softness shows mainly in the corners, so this edge should be close
+# across models; 5s must not come out meaningfully sharper than 8.
+if report["day-sign"]["5s"]["width"] < report["day-sign"]["8"]["width"] * 0.85:
+    fail.append("5s should not be much sharper than 8 on a high-contrast edge")
 
 if report["day-sky"]["xs"]["hf"] > 1.2:
     fail.append("XS daylight sky should be nearly clean")

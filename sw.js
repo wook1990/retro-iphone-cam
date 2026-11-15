@@ -1,4 +1,4 @@
-const CACHE = "retro-iphone-cam-v5";
+const CACHE = "retro-iphone-cam-v6";
 const ASSETS = [
   "./",
   "./index.html",

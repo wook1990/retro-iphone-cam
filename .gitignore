@@ -17,3 +17,7 @@ samples/ui-mobile.png
 test/source-dim.jpg
 samples/analyze.json
 samples/original-dim.jpg
+
+samples/grid-verify.jpg
+test/grid-*.jpg
+__pycache__/

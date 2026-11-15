@@ -25,7 +25,7 @@ const LOOKS = [
     aperture: 2.2, focalMm: 4.12, sensorDiagMm: 6.0, pitchUm: 1.5,
     fwc: 6500, read: 3.8, fpn: 0.6,
     isoMin: 32, isoMax: 1600, tMax: 1 / 17,
-    aberrPx: 3.6, flare: 0.08, ca: 0.0042,
+    aberrPx: 3.6, flare: 0.08, ca: 4.0,
     nrLuma: 0.2, nrChroma: 0.9,
     sharpen: 0.2, halo: 0.08,
     wb: [1.08, 1, 0.9],
@@ -38,7 +38,7 @@ const LOOKS = [
     aperture: 2.2, focalMm: 4.15, sensorDiagMm: 6.0, pitchUm: 1.22,
     fwc: 4200, read: 2.3, fpn: 0.4,
     isoMin: 25, isoMax: 3200, tMax: 1 / 17,
-    aberrPx: 2.3, flare: 0.05, ca: 0.0026,
+    aberrPx: 2.3, flare: 0.05, ca: 2.5,
     nrLuma: 0.14, nrChroma: 0.52,
     sharpen: 0.42, halo: 0.2,
     wb: [0.98, 1, 1.05],
@@ -51,7 +51,7 @@ const LOOKS = [
     aperture: 2.2, focalMm: 4.15, sensorDiagMm: 6.0, pitchUm: 1.22,
     fwc: 4200, read: 2.4, fpn: 0.45,
     isoMin: 25, isoMax: 3200, tMax: 1 / 17,
-    aberrPx: 2.5, flare: 0.06, ca: 0.003,
+    aberrPx: 2.5, flare: 0.06, ca: 2.8,
     nrLuma: 0.18, nrChroma: 0.7,
     sharpen: 0.28, halo: 0.12,
     wb: [1.12, 1, 0.86],
@@ -64,7 +64,7 @@ const LOOKS = [
     aperture: 1.8, focalMm: 3.99, sensorDiagMm: 6.0, pitchUm: 1.22,
     fwc: 4800, read: 2.0, fpn: 0.3,
     isoMin: 20, isoMax: 3200, tMax: 1 / 4,
-    aberrPx: 1.5, flare: 0.03, ca: 0.0016,
+    aberrPx: 1.5, flare: 0.03, ca: 1.6,
     nrLuma: 0.09, nrChroma: 0.36,
     sharpen: 0.42, halo: 0.18,
     wb: [0.97, 1, 1.05],
@@ -77,7 +77,7 @@ const LOOKS = [
     aperture: 1.8, focalMm: 3.99, sensorDiagMm: 6.0, pitchUm: 1.22,
     fwc: 5000, read: 1.7, fpn: 0.25,
     isoMin: 22, isoMax: 2500, tMax: 1 / 4,
-    aberrPx: 1.2, flare: 0.025, ca: 0.0012,
+    aberrPx: 1.2, flare: 0.025, ca: 1.2,
     nrLuma: 0.07, nrChroma: 0.28,
     sharpen: 0.48, halo: 0.28,
     wb: [1.07, 1.02, 0.9],
@@ -90,7 +90,7 @@ const LOOKS = [
     aperture: 1.8, focalMm: 4.25, sensorDiagMm: 7.06, pitchUm: 1.4,
     fwc: 8000, read: 1.5, fpn: 0.18,
     isoMin: 16, isoMax: 3200, tMax: 1 / 4,
-    aberrPx: 0.7, flare: 0.015, ca: 0.0008,
+    aberrPx: 0.7, flare: 0.015, ca: 0.8,
     nrLuma: 0.04, nrChroma: 0.16,
     sharpen: 0.28, halo: 0.03,
     wb: [1.05, 1.01, 0.94],
@@ -151,10 +151,11 @@ const FS_LENS = COMMON + `
 uniform vec2 uCropOrigin;
 uniform vec2 uCropSize;
 uniform float uMirror;
-uniform float uCA;
-uniform float uTanMax;
+uniform float uCAPx;
+uniform vec2 uHalfMm;
+uniform float uFocalMm;
+uniform float uHalfDiagMm;
 uniform float uFlare;
-varying vec2 vUvDummy;
 
 vec3 srcLin(vec2 uv) {
   vec2 t = uCropOrigin + uv * uCropSize;
@@ -164,23 +165,35 @@ vec3 srcLin(vec2 uv) {
 
 void main() {
   vec2 uv = vUv;
-  vec2 vc = uv * 2.0 - 1.0;
-  float rad = length(vc);
-  vec2 dir = rad > 0.0001 ? vc / rad : vec2(0.0);
-  float ca = uCA * rad * rad;
+  // Physical radius on the cropped sensor, in mm. UV radius is not used:
+  // on a non-square frame it would treat every mid-edge as the corner and
+  // squash the optics into a circular "loupe" in UV space.
+  vec2 mm = (uv * 2.0 - 1.0) * uHalfMm;
+  float rMm = length(mm);
+  float rNorm = rMm / max(uHalfDiagMm, 0.0001);
+  // Lateral CA is a tiny per-channel pixel offset along the true radial
+  // direction. Green is the geometry reference and is never shifted, so
+  // there is no magnification or barrel term.
+  vec2 pix = (uv - 0.5) * uRes;
+  float rPx = length(pix);
+  vec2 dirPx = rPx > 0.0001 ? pix / rPx : vec2(0.0);
+  vec2 uvOff = dirPx * (uCAPx * rNorm * rNorm) / uRes;
   vec3 c;
-  c.r = srcLin(uv + dir * ca).r;
+  c.r = srcLin(uv + uvOff).r;
   c.g = srcLin(uv).g;
-  c.b = srcLin(uv - dir * ca).b;
-  float theta = atan(uTanMax * rad);
+  c.b = srcLin(uv - uvOff).b;
+  float theta = atan(rMm / max(uFocalMm, 0.01));
   float vig = pow(max(cos(theta), 0.0), 4.0);
   c *= vig;
   if (uFlare > 0.001) {
+    // Veiling flare is a wide, isotropic haze from bright areas — not a
+    // radial zoom-blur sample that would stretch the image.
+    vec2 o = vec2(0.04 * uRes.y, 0.04 * uRes.y) / uRes;
     vec3 h = vec3(0.0);
-    h += srcLin(uv + dir * 0.12);
-    h += srcLin(uv - dir * 0.12);
-    h += srcLin(uv + vec2(dir.y, -dir.x) * 0.1);
-    h += srcLin(uv + vec2(-dir.y, dir.x) * 0.1);
+    h += srcLin(uv + vec2(o.x, 0.0));
+    h += srcLin(uv - vec2(o.x, 0.0));
+    h += srcLin(uv + vec2(0.0, o.y));
+    h += srcLin(uv - vec2(0.0, o.y));
     h *= 0.25;
     c += max(h - vec3(0.55), 0.0) * uFlare;
   }
@@ -192,12 +205,14 @@ const FS_BLUR = COMMON + `
 uniform vec2 uDir;
 uniform float uDiffPx;
 uniform float uAberrPx;
+uniform vec2 uHalfMm;
+uniform float uHalfDiagMm;
 
 void main() {
   vec2 uv = vUv;
-  vec2 vc = uv * 2.0 - 1.0;
-  float r2 = dot(vc, vc);
-  float sigma = uDiffPx * 0.45 + uAberrPx * r2;
+  vec2 mm = (uv * 2.0 - 1.0) * uHalfMm;
+  float rNorm = length(mm) / max(uHalfDiagMm, 0.0001);
+  float sigma = uDiffPx * 0.45 + uAberrPx * rNorm * rNorm;
   vec2 step = uDir / uRes;
   vec3 acc = decLin(texture2D(uTex, uv).rgb);
   float wsum = 1.0;
@@ -574,6 +589,30 @@ function cropUv(outW, outH) {
   return { origin: [(1 - cw) / 2, (1 - ch) / 2], size: [cw, ch] };
 }
 
+function lensFrame(look, outW, outH) {
+  const pitchMm = look.pitchUm / 1000;
+  const landscape = outW >= outH;
+  const natW = landscape ? look.width : look.height;
+  const natH = landscape ? look.height : look.width;
+  const natAspect = natW / natH;
+  const outAspect = outW / Math.max(outH, 1);
+  let cropPxW;
+  let cropPxH;
+  if (outAspect > natAspect) {
+    cropPxW = natW;
+    cropPxH = natW / outAspect;
+  } else {
+    cropPxH = natH;
+    cropPxW = natH * outAspect;
+  }
+  return {
+    halfWmm: cropPxW * pitchMm * 0.5,
+    halfHmm: cropPxH * pitchMm * 0.5,
+    halfDiagMm: look.sensorDiagMm * 0.5,
+    scale: outW / Math.max(cropPxW, 1),
+  };
+}
+
 function evLimits(look) {
   const isoHead = Math.log2(look.isoMax / 640);
   const apLoss = 2 * Math.log2(look.aperture / 1.8);
@@ -694,8 +733,10 @@ function drawFrame(targetW, targetH, seed) {
   }
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
 
-  const tanMax = (look.sensorDiagMm * 0.5) / look.focalMm;
-  const diffPx = (2.44 * 0.55 * look.aperture) / look.pitchUm;
+  const frame = lensFrame(look, targetW, targetH);
+  const diffPx = ((2.44 * 0.55 * look.aperture) / look.pitchUm) * frame.scale;
+  const aberrPx = look.aberrPx * frame.scale;
+  const caPx = look.ca * frame.scale;
 
   drawTo(targets[0], targetW, targetH);
   let uni = useProg(lens);
@@ -705,8 +746,10 @@ function drawFrame(targetW, targetH, seed) {
   gl.uniform2f(uni.uCropOrigin, crop.origin[0], crop.origin[1]);
   gl.uniform2f(uni.uCropSize, crop.size[0], crop.size[1]);
   gl.uniform1f(uni.uMirror, mirror ? 1 : 0);
-  gl.uniform1f(uni.uCA, look.ca);
-  gl.uniform1f(uni.uTanMax, tanMax);
+  gl.uniform1f(uni.uCAPx, caPx);
+  gl.uniform2f(uni.uHalfMm, frame.halfWmm, frame.halfHmm);
+  gl.uniform1f(uni.uFocalMm, look.focalMm);
+  gl.uniform1f(uni.uHalfDiagMm, frame.halfDiagMm);
   gl.uniform1f(uni.uFlare, look.flare);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
@@ -717,7 +760,9 @@ function drawFrame(targetW, targetH, seed) {
   gl.uniform2f(uni.uRes, targetW, targetH);
   gl.uniform2f(uni.uDir, 1, 0);
   gl.uniform1f(uni.uDiffPx, diffPx);
-  gl.uniform1f(uni.uAberrPx, look.aberrPx);
+  gl.uniform1f(uni.uAberrPx, aberrPx);
+  gl.uniform2f(uni.uHalfMm, frame.halfWmm, frame.halfHmm);
+  gl.uniform1f(uni.uHalfDiagMm, frame.halfDiagMm);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
   drawTo(targets[0], targetW, targetH);
@@ -727,7 +772,9 @@ function drawFrame(targetW, targetH, seed) {
   gl.uniform2f(uni.uRes, targetW, targetH);
   gl.uniform2f(uni.uDir, 0, 1);
   gl.uniform1f(uni.uDiffPx, diffPx);
-  gl.uniform1f(uni.uAberrPx, look.aberrPx);
+  gl.uniform1f(uni.uAberrPx, aberrPx);
+  gl.uniform2f(uni.uHalfMm, frame.halfWmm, frame.halfHmm);
+  gl.uniform1f(uni.uHalfDiagMm, frame.halfDiagMm);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
   drawTo(targets[1], targetW, targetH);
