@@ -1,8 +1,8 @@
 # 그때 아이폰 — 개발 기록
 
-2026년 11월 15일, 하루 동안 5s·SE·6s·7·8·XS의 카메라 느낌을 브라우저에서 재현하는 정적 PWA를 만들고, 하람 님의 피드백을 따라 열한 번 고쳤습니다. 2026년 11월 16일, 요청에 따라 호스팅하던 Cloudflare Pages 프로젝트는 삭제했고, 코드는 이 저장소에 남아 있습니다.
+2026년 11월 15일, 하루 동안 5s·SE·6s·7·8·XS의 카메라 느낌을 브라우저에서 재현하는 정적 PWA를 만들고, 하람 님의 피드백을 따라 열한 번 고쳤습니다. 2026년 11월 16일 호스팅 데모를 한 번 내렸다가, 같은 날 다시 올렸습니다. 주소는 https://retro-iphone-cam-3rv.pages.dev 입니다.
 
-A one-day build of a static PWA that gives photos the look of those iPhones. Eleven revisions followed Haram's feedback. The hosted demo was taken down on 16 Nov 2026 (KST); the code stays in this repo.
+A one-day build of a static PWA that gives photos the look of those iPhones. Eleven revisions followed Haram's feedback. The hosted demo was taken down earlier on 16 Nov 2026 (KST), then put back up the same day at https://retro-iphone-cam-3rv.pages.dev.
 
 버전 번호는 서비스 워커 캐시 이름과 같습니다. v1.1은 커밋 제목이 그렇게 적혀 있지만, 캐시는 v2로 올라갔습니다.
 
@@ -117,11 +117,15 @@ v8에서 루마를 항등으로 두고 비네팅·플레어·PSF를 일괄로 �
 
 *Feedback: the edges looked hazy, like portrait or bokeh mode. Old iPhones were not like that. Removed field-dependent blur, the preview CA floor, and the strong residual vignette. Softness is even across the frame. Preview 21.7 fps. Grid 24/24.*
 
-## 2026-11-16 — 호스팅 종료
+## 2026-11-16 — 호스팅 종료, 같은 날 복구
 
-하람 님 요청으로 Cloudflare Pages 프로젝트 `retro-iphone-cam`과 그 배포를 모두 삭제했습니다. 예전 주소는 앱을 더 이상 제공하지 않습니다. 로컬이나 다른 정적 호스트에서 계속 쓸 수 있습니다. README를 보세요.
+하람 님 요청으로 Cloudflare Pages 프로젝트 `retro-iphone-cam`과 그 배포를 모두 삭제했습니다. 로컬이나 다른 정적 호스트에서 계속 쓸 수 있습니다.
 
-*The Pages project and all deployments were deleted on request. Self-host from this repo; see the README.*
+*The Pages project and all deployments were deleted on request.*
+
+같은 날, 하람 님 요청으로 데모를 다시 올렸습니다. 주소는 [https://retro-iphone-cam-3rv.pages.dev](https://retro-iphone-cam-3rv.pages.dev) 입니다. 서비스 워커 캐시는 v11입니다.
+
+*The hosted demo was restored later on 16 Nov 2026 (KST) at the same production URL, still on the v11 cache.*
 
 ---
 
